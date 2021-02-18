@@ -1,0 +1,28 @@
+name: DocumentPreview
+version: $SERVICE_TAG
+description: Automatically extract the first page of a document as an image
+
+accepts: (document/pdf|document/office/.*)
+rejects: empty|metadata/.*
+
+stage: CORE
+category: Extraction
+
+file_required: true
+timeout: 60
+disable_cache: false
+
+enabled: true
+is_external: false
+licence_count: 0
+
+submission_params:
+  - default: 1
+    name: max_pages
+    type: int
+    value: 1
+
+docker_config:
+  image: x1mus/assemblyline-service-document-preview:$SERVICE_TAG
+  cpu_cores: 1
+  ram_mb: 256

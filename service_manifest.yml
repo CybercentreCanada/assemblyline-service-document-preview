@@ -23,6 +23,6 @@ submission_params:
     value: 1
 
 docker_config:
-  image: x1mus/assemblyline-service-document-preview:$SERVICE_TAG
+  image: assemblyline-service-document-preview:$SERVICE_TAG
   cpu_cores: 1
   ram_mb: 256

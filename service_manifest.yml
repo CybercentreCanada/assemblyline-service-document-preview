@@ -17,12 +17,12 @@ is_external: false
 licence_count: 0
 
 submission_params:
-  - default: 1
-    name: max_pages
-    type: int
-    value: 1
+  - default: false
+    value: false
+    type: bool
+    name: analyze_output
 
 docker_config:
-  image: ghcr.io/nvisosecurity/assemblyline-service-document-preview:$SERVICE_TAG
+  image: cccs/assemblyline-service-document-preview:$SERVICE_TAG
   cpu_cores: 1
   ram_mb: 256

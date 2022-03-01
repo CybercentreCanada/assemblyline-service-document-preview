@@ -23,6 +23,6 @@ submission_params:
     name: analyze_output
 
 docker_config:
-  image: ghcr.io/nvisosecurity/assemblyline-service-document-preview:$SERVICE_TAG
+  image: cccs/assemblyline-service-document-preview:$SERVICE_TAG
   cpu_cores: 1
   ram_mb: 256

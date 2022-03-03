@@ -1,4 +1,5 @@
-FROM cccs/assemblyline-v4-service-base:stable
+ARG branch=latest
+FROM cccs/assemblyline-v4-service-base:$branch
 
 ENV SERVICE_PATH document_preview.DocumentPreview
 

@@ -6,7 +6,7 @@ from natsort import natsorted
 from pdf2image import convert_from_path
 
 from assemblyline_v4_service.common.base import ServiceBase
-from assemblyline_v4_service.common.result import BODY_FORMAT, Result, ResultImageSection, ResultSection, Heuristic
+from assemblyline_v4_service.common.result import BODY_FORMAT, Result, ResultImageSection, ResultJSONSection, Heuristic
 from assemblyline_v4_service.common.extractor.ocr import ocr_detections
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -93,8 +93,8 @@ class DocumentPreview(ServiceBase):
             detections = ocr_detections(image_path)
             if any(v for v in detections.values()):
                 result.add_section(
-                    ResultSection(f'OCR Analysis on {os.path.basename(image_path)}',
-                                  body=json.dumps(detections), body_format=BODY_FORMAT.JSON,
-                                  heuristic=Heuristic(1, signatures={k: len(v) for k, v in detections.items()}))
+                    ResultJSONSection(f'OCR Analysis on {os.path.basename(image_path)}',
+                                      body=json.dumps(detections),
+                                      heuristic=Heuristic(1, signatures={k: len(v) for k, v in detections.items()}))
                 )
         request.result = result

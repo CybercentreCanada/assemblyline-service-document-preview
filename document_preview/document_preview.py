@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 
@@ -5,10 +6,11 @@ from natsort import natsorted
 from pdf2image import convert_from_path
 
 from assemblyline_v4_service.common.base import ServiceBase
-from assemblyline_v4_service.common.result import Heuristic, Result, ResultImageSection
+from assemblyline_v4_service.common.result import BODY_FORMAT, Result, ResultImageSection, ResultJSONSection, Heuristic
+from assemblyline_v4_service.common.extractor.ocr import ocr_detections
 
-from helper.emlrender import processEml as eml2image
-from helper.outlookmsgfile import load as msg2eml
+from document_preview.helper.emlrender import processEml as eml2image
+from document_preview.helper.outlookmsgfile import load as msg2eml
 
 
 class DocumentPreview(ServiceBase):
@@ -40,12 +42,7 @@ class DocumentPreview(ServiceBase):
             page.save(self.working_directory + "/output_" + str(i) + ".jpeg")
             i += 1
 
-    def execute(self, request):
-        result = Result()
-
-        file = request.file_path
-        file_type = request.file_type
-
+    def render_documents(self, file_type, file, file_contents):
         # Word/Excel/Powerpoint
         if any(file_type == f'document/office/{ms_product}' for ms_product in ['word', 'excel', 'powerpoint']):
             converted = self.libreoffice_conversion(file)
@@ -57,35 +54,47 @@ class DocumentPreview(ServiceBase):
         # EML/MSG
         elif file_type.endswith('email'):
             # Convert MSG to EML where applicable
-            file_contents = msg2eml(file).as_bytes() if file_type == 'document/office/email' else request.file_contents
+            file_contents = msg2eml(file).as_bytes() if file_type == 'document/office/email' else file_contents
 
             # Render EML as PNG
             eml2image(file_contents, self.working_directory, self.log)
 
-        # Attempt to preview unknown document format
-        else:
-            try:
-                converted = self.libreoffice_conversion(file)
-                if converted[0]:
-                    self.pdf_to_images(self.working_directory + "/" + converted[1])
-            except:
-                # Conversion not successfull
-                pass
+    def execute(self, request):
+        result = Result()
 
+        # Attempt to render documents given and dump them to the working directory
+        self.render_documents(request.file_type, request.file_path, request.file_contents)
+        max_pages = request.get_param('max_pages_rendered')
+        images = list()
+
+        # Create an image gallery section to show the renderings
         if any("output" in s for s in os.listdir(self.working_directory)):
-            image_section = ResultImageSection(request, "Successfully extracted the preview.")
-
-            i = 0
             previews = [s for s in os.listdir(self.working_directory) if "output" in s]
-            for preview in natsorted(previews):
+            total_pages = len(previews)
+            image_section = ResultImageSection(request,
+                                               "Successfully extracted the preview. "
+                                               f"Displaying {min(max_pages, total_pages)} of {total_pages}.")
+            for i, preview in enumerate(natsorted(previews)):
+                if i >= max_pages:
+                    break
                 image_path = f"{self.working_directory}/{preview}"
+                images.append(image_path)
                 title = f"preview_{i}.jpeg"
                 desc = f"Here's the preview for page {i}"
-                if request.get_param('analyze_output'):
-                    request.add_extracted(image_path, title, desc)
                 image_section.add_image(image_path, title, desc)
-                i += 1
 
             result.add_section(image_section)
 
+        # Proceed with analysis of output images
+        for i, image_path in enumerate(images):
+            if i >= max_pages:
+                break
+
+            detections = ocr_detections(image_path)
+            if any(v for v in detections.values()):
+                result.add_section(
+                    ResultJSONSection(f'OCR Analysis on {os.path.basename(image_path)}',
+                                      body=json.dumps(detections),
+                                      heuristic=Heuristic(1, signatures={k: len(v) for k, v in detections.items()}))
+                )
         request.result = result

@@ -1,12 +1,12 @@
 name: DocumentPreview
 version: $SERVICE_TAG
-description: Automatically extract the first page of a document as an image
+description: Use OCR to detect for signs of malicious behaviour in Office and PDF files
 
 accepts: (document/pdf|document/office/.*)
 rejects: empty|metadata/.*
 
 stage: CORE
-category: Extraction
+category: Static Analysis
 
 file_required: true
 timeout: 60
@@ -17,10 +17,21 @@ is_external: false
 licence_count: 0
 
 submission_params:
-  - default: false
-    value: false
-    type: bool
-    name: analyze_output
+  # Default is selected for phishing campaigns that tend to be singular-paged documents
+  - name: max_pages_rendered
+    type: int
+    value: 1
+    default: 1
+
+heuristics:
+  - heur_id: 1
+    name: OCR Detection found
+    description: Suspicious verbage found in OCR inspection.
+    score: 0
+    signature_score_map:
+      macros: 100
+      ransomware: 100
+    filetype: "*"
 
 docker_config:
   image: cccs/assemblyline-service-document-preview:$SERVICE_TAG

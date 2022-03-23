@@ -93,7 +93,7 @@ class DocumentPreview(ServiceBase):
             previews = [s for s in os.listdir(self.working_directory) if "output" in s]
             image_section = ResultImageSection(request,  "Successfully extracted the preview.")
             [image_section.add_image(f"{self.working_directory}/{preview}",
-                                     name=f"preview_{i}.jpeg", description=f"Here's the preview for page {i}",
+                                     name=f"page_{str(i).zfill(3)}.jpeg", description=f"Here's the preview for page {i}",
                                      ocr_heuristic_id=1)
              for i, preview in enumerate(natsorted(previews))]
 

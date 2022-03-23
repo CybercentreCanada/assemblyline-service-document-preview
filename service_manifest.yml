@@ -2,7 +2,7 @@ name: DocumentPreview
 version: $SERVICE_TAG
 description: Use OCR to detect for signs of malicious behaviour in Office and PDF files
 
-accepts: document/(pdf|office/.*)
+accepts: document/(pdf$|office/.*)|image/emf
 rejects: empty|metadata/.*
 
 stage: CORE

@@ -1,17 +1,16 @@
-from doctest import Example
-import json
+import math
 import os
 import subprocess
+import tempfile
 
 from natsort import natsorted
 from pdf2image import convert_from_path
 
 from assemblyline_v4_service.common.base import ServiceBase
-from assemblyline_v4_service.common.result import BODY_FORMAT, Result, ResultImageSection, ResultJSONSection, Heuristic, ResultTextSection
-from assemblyline_v4_service.common.extractor.ocr import ocr_detections
+from assemblyline_v4_service.common.result import Result, ResultImageSection
 
 from document_preview.helper.emlrender import processEml as eml2image
-from document_preview.helper.outlookmsgfile import load as msg2eml
+from PIL import Image
 
 
 class DocumentPreview(ServiceBase):
@@ -69,10 +68,29 @@ class DocumentPreview(ServiceBase):
         # EML/MSG
         elif file_type.endswith('email'):
             # Convert MSG to EML where applicable
-            file_contents = msg2eml(file).as_bytes() if file_type == 'document/office/email' else file_contents
+            if file_type == 'document/office/email':
+                with tempfile.NamedTemporaryFile() as tmp:
+                    subprocess.run(['msgconvert', '-outfile', tmp.name, file])
+                    tmp.seek(0)
+                    file_contents = tmp.read()
 
             # Render EML as PNG
-            eml2image(file_contents, self.working_directory, self.log)
+            output_image = eml2image(file_contents, self.working_directory, self.log)
+            img = Image.open(output_image)
+            img_dim = img.size
+            if img_dim[1] > 16383:
+                y = 0
+                # Split up image into smaller pieces
+                while y < img_dim[1]:
+                    height = 16383
+                    if y + height > img_dim[1]:
+                        height = img_dim[1] - y
+                    box = (0, y, img_dim[0], y + height)
+                    slice = img.crop(box)
+                    slice.save(f"{output_image}_{math.ceil(y//16383)}", "PNG")
+                    y += 16383
+                os.remove(output_image)
+
         elif file_type.endswith('emf'):
             self.libreoffice_conversion(file, convert_to="png")
 

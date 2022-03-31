@@ -2,6 +2,7 @@ import math
 import os
 import subprocess
 import tempfile
+from time import time
 
 from natsort import natsorted
 from pdf2image import convert_from_path
@@ -18,6 +19,7 @@ class DocumentPreview(ServiceBase):
         super(DocumentPreview, self).__init__(config)
 
     def start(self):
+        subprocess.Popen(["unoconv", "--listener"])
         self.log.debug("Document preview service started")
 
     def stop(self):
@@ -95,6 +97,7 @@ class DocumentPreview(ServiceBase):
             self.libreoffice_conversion(file, convert_to="png")
 
     def execute(self, request):
+        start = time()
         result = Result()
 
         # Attempt to render documents given and dump them to the working directory
@@ -117,3 +120,4 @@ class DocumentPreview(ServiceBase):
 
             result.add_section(image_section)
         request.result = result
+        self.log.debug(f"Runtime: {time() - start}s")

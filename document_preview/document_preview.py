@@ -13,6 +13,8 @@ from assemblyline_v4_service.common.result import Result, ResultImageSection
 from document_preview.helper.emlrender import processEml as eml2image
 from PIL import Image
 
+WEBP_MAX_SIZE = 16383
+
 
 class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
@@ -80,17 +82,19 @@ class DocumentPreview(ServiceBase):
             output_image = eml2image(file_contents, self.working_directory, self.log)
             img = Image.open(output_image)
             img_dim = img.size
-            if img_dim[1] > 16383:
-                y = 0
+            if img_dim[1] > WEBP_MAX_SIZE:
+                pos_y, index = 0, 0
                 # Split up image into smaller pieces
-                while y < img_dim[1]:
-                    height = 16383
-                    if y + height > img_dim[1]:
-                        height = img_dim[1] - y
-                    box = (0, y, img_dim[0], y + height)
+                while pos_y < img_dim[1]:
+                    height = WEBP_MAX_SIZE
+                    if pos_y + height > img_dim[1]:
+                        height = img_dim[1] - pos_y
+                    box = (0, pos_y, img_dim[0], pos_y + height)
                     slice = img.crop(box)
-                    slice.save(f"{output_image}_{math.ceil(y//16383)}", "PNG")
-                    y += 16383
+                    slice.save(f"{output_image}_{index}", "PNG")
+                    index += 1
+                    pos_y = index * WEBP_MAX_SIZE
+
                 os.remove(output_image)
 
         elif file_type.endswith('emf'):

@@ -41,7 +41,7 @@ class DocumentPreview(ServiceBase):
 
     def office_conversion(self, file, orientation="portrait", page_range_end=2):
         subprocess.check_output(
-            f"unoconv -f pdf -e PageRange=1-{page_range_end} -e PaperOrientation={orientation} -o {self.working_directory}/ {file}",
+            f"unoconv -f pdf -e PageRange=1-{page_range_end} -P PaperOrientation={orientation} -P PaperFormat=A3 -o {self.working_directory}/ {file}",
             shell=True)
 
         converted_file = [s for s in os.listdir(self.working_directory) if f".pdf" in s]

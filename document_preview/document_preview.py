@@ -79,7 +79,9 @@ class DocumentPreview(ServiceBase):
                     file_contents = tmp.read()
 
             # Render EML as PNG
-            output_image = eml2image(file_contents, self.working_directory, self.log)
+            # If we have internet access, we'll attempt to load external images
+            output_image = eml2image(file_contents, self.working_directory, self.log,
+                                     load_images=self.service_attributes.docker_config.allow_internet_access)
             img = Image.open(output_image)
             img_dim = img.size
             if img_dim[1] > WEBP_MAX_SIZE:

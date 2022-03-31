@@ -58,7 +58,7 @@ def appendImages(images):
     return new_im
 
 
-def processEml(data, dumpDir, logger):
+def processEml(data, dumpDir, logger, load_images=False):
     '''
     Process the email (bytes), extract MIME parts and useful headers.
     Generate a PNG picture of the mail
@@ -104,6 +104,8 @@ def processEml(data, dumpDir, logger):
     idField = idField.replace('<', '&lt;').replace('>', '&gt;')
 
     imgkitOptions = {'load-error-handling': 'skip'}
+    if not load_images:
+        imgkitOptions.update({'no-images': None})
     # imgkitOptions.update({ 'quiet': None })
     imagesList = []
     attachments = []

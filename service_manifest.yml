@@ -23,6 +23,16 @@ submission_params:
     value: 1
     default: 1
 
+  - name: run_ocr
+    type: bool
+    value: false
+    default: false
+
+  - name: load_email_images
+    type: bool
+    value: false
+    default: false
+
 heuristics:
   - heur_id: 1
     name: OCR Detection found

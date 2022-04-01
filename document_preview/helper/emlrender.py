@@ -15,9 +15,9 @@ import sys
 import email
 import email.header
 import quopri
-import hashlib
 import base64
 import regex
+from tempfile import NamedTemporaryFile
 
 try:
     import imgkit
@@ -58,7 +58,7 @@ def appendImages(images):
     return new_im
 
 
-def processEml(data, dumpDir, logger, load_images=False):
+def processEml(data, output_dir, logger, load_ext_images=False, load_images=False):
     '''
     Process the email (bytes), extract MIME parts and useful headers.
     Generate a PNG picture of the mail
@@ -104,11 +104,10 @@ def processEml(data, dumpDir, logger, load_images=False):
     idField = idField.replace('<', '&lt;').replace('>', '&gt;')
 
     imgkitOptions = {'load-error-handling': 'skip'}
-    if not load_images:
+    if not load_ext_images:
         imgkitOptions.update({'no-images': None})
     # imgkitOptions.update({ 'quiet': None })
     imagesList = []
-    attachments = []
 
     # Build a first image with basic mail details
     headers = '''
@@ -121,15 +120,13 @@ def processEml(data, dumpDir, logger, load_images=False):
     </table>
     <hr></p>
     ''' % (dateField, fromField, toField, subjectField, idField)
-    m = hashlib.md5()
-    m.update(headers.encode('utf-8'))
-    imagePath = f'output_{m.hexdigest()}.png'
     try:
-        imgkit.from_string(headers, dumpDir + '/' + imagePath, options=imgkitOptions)
-        logger.info('Created headers %s' % imagePath)
-        imagesList.append(dumpDir + '/' + imagePath)
-    except:
-        logger.warning('Creation of headers failed')
+        header_path = NamedTemporaryFile(suffix=".png").name
+        imgkit.from_string(headers, header_path, options=imgkitOptions)
+        logger.info('Created headers %s' % header_path)
+        imagesList.append(header_path)
+    except Exception as e:
+        logger.warning(f'Creation of headers failed: {e}')
 
     #
     # Main loop - process the MIME parts
@@ -157,38 +154,27 @@ def processEml(data, dumpDir, logger, load_images=False):
             # for char in dirtyChars:
             #     payload = payload.replace(char, '')
 
-            # Generate MD5 hash of the payload
-            m = hashlib.md5()
-            m.update(payload.encode('utf-8'))
-            imagePath = f'output_{m.hexdigest()}.png'
             try:
-                imgkit.from_string(payload, dumpDir + '/' + imagePath, options=imgkitOptions)
-                logger.info('Decoded %s' % imagePath)
-                imagesList.append(dumpDir + '/' + imagePath)
+                payload_path = NamedTemporaryFile(suffix=".png").name
+                imgkit.from_string(payload, payload_path, options=imgkitOptions)
+                logger.info('Decoded %s' % payload_path)
+                imagesList.append(payload_path)
             except Exception as e:
                 logger.warning(f'Decoding this MIME part returned error: {e}')
-        elif mimeType in imageTypes:
-            payload = part.get_payload(decode=False)
-            imgdata = base64.b64decode(payload)
-            # Generate MD5 hash of the payload
-            m = hashlib.md5()
-            m.update(payload.encode('utf-8'))
-            imagePath = m.hexdigest() + '.' + mimeType.split('/')[1]
-            try:
-                with open(dumpDir + '/' + imagePath, 'wb') as f:
-                    f.write(imgdata)
-                logger.info('Decoded %s' % imagePath)
-                imagesList.append(dumpDir + '/' + imagePath)
-            except Exception as e:
-                logger.warning(f'Decoding this MIME part returned error: {e}')
-        else:
-            fileName = part.get_filename()
-            if not fileName:
-                fileName = "Unknown"
-            attachments.append("%s (%s)" % (fileName, mimeType))
-            logger.info('Skipped attachment %s (%s)' % (fileName, mimeType))
 
-    resultImage = dumpDir + '/' + 'output.png'
+        elif mimeType in imageTypes and load_images:
+            payload = part.get_payload(decode=False)
+            payload_path = NamedTemporaryFile(suffix=".png").name
+            imgdata = base64.b64decode(payload)
+            try:
+                with open(payload_path, 'wb') as f:
+                    f.write(imgdata)
+                logger.info('Decoded %s' % payload_path)
+                imagesList.append(payload_path)
+            except Exception as e:
+                logger.warning(f'Decoding this MIME part returned error: {e}')
+
+    resultImage = os.path.join(output_dir, 'output.png')
     if len(imagesList) > 0:
         images = list(map(Image.open, imagesList))
         combo = appendImages(images)

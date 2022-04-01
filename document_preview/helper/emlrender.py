@@ -108,7 +108,6 @@ def processEml(data, output_dir, logger, load_ext_images=False, load_images=Fals
         imgkitOptions.update({'no-images': None})
     # imgkitOptions.update({ 'quiet': None })
     imagesList = []
-    attachments = []
 
     # Build a first image with basic mail details
     headers = '''
@@ -174,12 +173,6 @@ def processEml(data, output_dir, logger, load_ext_images=False, load_images=Fals
                 imagesList.append(payload_path)
             except Exception as e:
                 logger.warning(f'Decoding this MIME part returned error: {e}')
-        # else:
-        #     fileName = part.get_filename()
-        #     if not fileName:
-        #         fileName = "Unknown"
-        #     attachments.append("%s (%s)" % (fileName, mimeType))
-        #     logger.info('Skipped attachment %s (%s)' % (fileName, mimeType))
 
     resultImage = os.path.join(output_dir, 'output.png')
     if len(imagesList) > 0:

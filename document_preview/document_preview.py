@@ -51,8 +51,8 @@ class DocumentPreview(ServiceBase):
         else:
             return (False, None)
 
-    def pdf_to_images(self, file):
-        pages = convert_from_path(file)
+    def pdf_to_images(self, file, max_pages):
+        pages = convert_from_path(file, first_page=1, last_page=max_pages)
 
         i = 0
         for page in pages:
@@ -69,7 +69,7 @@ class DocumentPreview(ServiceBase):
                 self.pdf_to_images(self.working_directory + "/" + converted[1])
         # PDF
         elif request.file_type == 'document/pdf':
-            self.pdf_to_images(request.file_path)
+            self.pdf_to_images(request.file_path, max_pages)
         # EML/MSG
         elif request.file_type.endswith('email'):
             file_contents = request.file_contents

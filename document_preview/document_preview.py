@@ -51,7 +51,7 @@ class DocumentPreview(ServiceBase):
         else:
             return (False, None)
 
-    def pdf_to_images(self, file, max_pages):
+    def pdf_to_images(self, file, max_pages=None):
         pages = convert_from_path(file, first_page=1, last_page=max_pages)
 
         i = 0

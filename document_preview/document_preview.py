@@ -82,25 +82,9 @@ class DocumentPreview(ServiceBase):
 
             # Render EML as PNG
             # If we have internet access, we'll attempt to load external images
-            output_image = eml2image(file_contents, self.working_directory, self.log,
-                                     load_ext_images=self.service_attributes.docker_config.allow_internet_access,
-                                     load_images=request.get_param('load_email_images'))
-            img = Image.open(output_image)
-            img_dim = img.size
-            if img_dim[1] > WEBP_MAX_SIZE:
-                pos_y, index = 0, 0
-                # Split up image into smaller pieces
-                while pos_y < img_dim[1]:
-                    height = WEBP_MAX_SIZE
-                    if pos_y + height > img_dim[1]:
-                        height = img_dim[1] - pos_y
-                    box = (0, pos_y, img_dim[0], pos_y + height)
-                    slice = img.crop(box)
-                    slice.save(os.path.join(self.working_directory, f"output_{index}.png"), "PNG")
-                    index += 1
-                    pos_y = index * WEBP_MAX_SIZE
-
-                os.remove(output_image)
+            eml2image(file_contents, self.working_directory, self.log,
+                      load_ext_images=self.service_attributes.docker_config.allow_internet_access,
+                      load_images=request.get_param('load_email_images'))
 
         elif request.file_type.endswith('emf'):
             self.libreoffice_conversion(request.file_path, convert_to="png")

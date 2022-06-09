@@ -28,9 +28,9 @@ class DocumentPreview(ServiceBase):
         self.log.debug("Document preview service ended")
 
     def libreoffice_conversion(self, file, convert_to="pdf"):
-        subprocess.check_output(
-            f"libreoffice --headless --convert-to {convert_to} --outdir " + self.working_directory + " " + file,
-            shell=True)
+        subprocess.run(["libreoffice", "--headless",
+                        "--convert-to", convert_to,
+                        "--outdir", self.working_directory, file], capture_output=True)
 
         converted_file = [s for s in os.listdir(self.working_directory) if f".{convert_to}" in s][0]
 
@@ -40,9 +40,11 @@ class DocumentPreview(ServiceBase):
             return (False, None)
 
     def office_conversion(self, file, orientation="portrait", page_range_end=2):
-        subprocess.check_output(
-            f"unoconv -f pdf -e PageRange=1-{page_range_end} -P PaperOrientation={orientation} -P PaperFormat=A3 -o {self.working_directory}/ {file}",
-            shell=True)
+        subprocess.run(["unoconv", "-f", "pdf",
+                        "-e", f"PageRange=1-{page_range_end}",
+                        "-P", f"PaperOrientation={orientation}",
+                        "-P", "PaperFormat=A3",
+                        "-o", f"{self.working_directory}/", file], capture_output=True)
 
         converted_file = [s for s in os.listdir(self.working_directory) if f".pdf" in s]
 

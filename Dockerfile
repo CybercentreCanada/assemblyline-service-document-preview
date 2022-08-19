@@ -2,7 +2,7 @@ ARG branch=latest
 FROM cccs/assemblyline-v4-service-base:$branch
 
 ENV SERVICE_PATH document_preview.document_preview.DocumentPreview
-ENV LIBRE_VERSION=7.3.4
+ENV LIBRE_VERSION=7.4.0
 
 USER root
 
@@ -14,7 +14,7 @@ RUN pip install pdf2image Pillow natsort imgkit compoundfiles compressed_rtf pyt
 RUN pip install git+https://github.com/unoconv/unoconv.git
 
 # Install Libreoffice
-RUN wget https://download.documentfoundation.org/libreoffice/stable/${LIBRE_VERSION}/deb/x86_64/LibreOffice_${LIBRE_VERSION}_Linux_x86-64_deb.tar.gz
+RUN wget https://tdf.mirror.rafal.ca/libreoffice/stable/${LIBRE_VERSION}/deb/x86_64/LibreOffice_${LIBRE_VERSION}_Linux_x86-64_deb.tar.gz
 RUN tar zxvf LibreOffice_${LIBRE_VERSION}_Linux_x86-64_deb.tar.gz && rm -f LibreOffice_${LIBRE_VERSION}_Linux_x86-64_deb.tar.gz
 RUN dpkg -i LibreOffice_${LIBRE_VERSION}*/DEBS/*.deb && rm -rf LibreOffice_${LIBRE_VERSION}*
 RUN apt-get install -y libdbus-1-3 libcups2 libsm6 libice6

@@ -2,7 +2,7 @@ ARG branch=latest
 FROM cccs/assemblyline-v4-service-base:$branch
 
 ENV SERVICE_PATH document_preview.document_preview.DocumentPreview
-ENV LIBRE_VERSION=7.4.2
+ENV LIBRE_VERSION=7.4.3
 
 USER root
 

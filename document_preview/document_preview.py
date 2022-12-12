@@ -96,7 +96,7 @@ class DocumentPreview(ServiceBase):
         result = Result()
 
         # Attempt to render documents given and dump them to the working directory
-        max_pages = request.get_param('max_pages_rendered')
+        max_pages = int(request.get_param('max_pages_rendered'))
         try:
             self.render_documents(request, max_pages)
         except Exception as e:

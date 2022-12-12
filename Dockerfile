@@ -11,7 +11,7 @@ RUN apt-get update && apt-get install -y wget tesseract-ocr libemail-outlook-mes
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
 RUN apt-get install -y poppler-utils ./wkhtmltox_0.12.6-1.buster_amd64.deb --no-install-recommends
 RUN pip install pdf2image Pillow natsort imgkit compoundfiles compressed_rtf pytesseract
-RUN pip install git+https://github.com/unoconv/unoconv.git
+RUN pip install unoconv>=0.9.0
 
 # Install Libreoffice
 RUN wget https://tdf.mirror.rafal.ca/libreoffice/stable/${LIBRE_VERSION}/deb/x86_64/LibreOffice_${LIBRE_VERSION}_Linux_x86-64_deb.tar.gz

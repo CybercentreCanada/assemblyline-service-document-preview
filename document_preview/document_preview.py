@@ -1,4 +1,4 @@
-import math
+import imgkit
 import os
 import subprocess
 import tempfile
@@ -12,7 +12,6 @@ from assemblyline_v4_service.common.result import Result, ResultImageSection
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 
 from document_preview.helper.emlrender import processEml as eml2image
-from PIL import Image
 
 WEBP_MAX_SIZE = 16383
 
@@ -28,7 +27,7 @@ class DocumentPreview(ServiceBase):
         self.log.debug("Document preview service ended")
 
     def libreoffice_conversion(self, file, convert_to="pdf"):
-        subprocess.run(["libreoffice", "--headless",
+        subprocess.run(["/usr/lib/libreoffice/program/soffice.bin", "--headless",
                         "--convert-to", convert_to,
                         "--outdir", self.working_directory, file], capture_output=True)
 
@@ -46,7 +45,7 @@ class DocumentPreview(ServiceBase):
                         "-P", "PaperFormat=A3",
                         "-o", f"{self.working_directory}/", file], capture_output=True)
 
-        converted_file = [s for s in os.listdir(self.working_directory) if f".pdf" in s]
+        converted_file = [s for s in os.listdir(self.working_directory) if ".pdf" in s]
 
         if converted_file:
             return (True, converted_file[0])
@@ -90,6 +89,21 @@ class DocumentPreview(ServiceBase):
 
         elif request.file_type.endswith('emf'):
             self.libreoffice_conversion(request.file_path, convert_to="png")
+        elif request.file_type == 'document/office/onenote':
+            with open(os.path.join(self.working_directory, request.file_name), 'wb+') as temp_one:
+                temp_one.write(request.file_contents)
+                temp_one.flush()
+                subprocess.run(['one2html', '-i', temp_one.name, '-o', self.working_directory],
+                               capture_output=True)
+            # Cleanup files
+            os.remove(os.path.join(self.working_directory, request.file_name))
+            for root, _, files in os.walk(self.working_directory):
+                for file in files:
+                    file_path = os.path.join(root, file)
+                    dir = os.path.dirname(file_path)
+                    if self.working_directory.endswith(dir):
+                        dir = ''
+                    imgkit.from_file(file_path, os.path.join(self.working_directory, f'{dir}_{file}_output.jpg'))
 
     def execute(self, request):
         start = time()

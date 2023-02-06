@@ -12,6 +12,12 @@ from assemblyline_v4_service.common.result import Result, ResultImageSection
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 
 from document_preview.helper.emlrender import processEml as eml2image
+from aspose.cells import SaveFormat as WorkbookSaveFormat, Workbook
+from aspose.slides import Presentation
+from aspose.slides.export import SaveFormat as PresentationSaveFormat
+
+from aspose.words import Document, SaveFormat as WordsSaveFormat
+
 
 WEBP_MAX_SIZE = 16383
 
@@ -61,15 +67,9 @@ class DocumentPreview(ServiceBase):
             i += 1
 
     def render_documents(self, request: Request, max_pages=1):
-        # Word/Excel/Powerpoint
-        if any(request.file_type == f'document/office/{ms_product}' for ms_product in ['word', 'excel', 'powerpoint']):
-            orientation = "landscape" if any(request.file_type.endswith(type)
-                                             for type in ['excel', 'powerpoint']) else "portrait"
-            converted = self.office_conversion(request.file_path, orientation, max_pages)
-            if converted[0]:
-                self.pdf_to_images(self.working_directory + "/" + converted[1])
-        # PDF
-        elif request.file_type == 'document/pdf':
+
+        if request.file_type == 'document/pdf':
+            # PDF
             self.pdf_to_images(request.file_path, max_pages)
         # EML/MSG
         elif request.file_type.endswith('email'):
@@ -86,24 +86,23 @@ class DocumentPreview(ServiceBase):
             eml2image(file_contents, self.working_directory, self.log,
                       load_ext_images=self.service_attributes.docker_config.allow_internet_access,
                       load_images=request.get_param('load_email_images'))
+        else:
+            # Word/Excel/Powerpoint
+            aspose_cls, save_format_cls = {
+                'document/office/excel': (Workbook, WorkbookSaveFormat),
+                'document/office/word': (Document, WordsSaveFormat),
+                'document/office/powerpoint': (Presentation, PresentationSaveFormat),
+            }.get(request.file_type, (None, None))
 
-        elif request.file_type.endswith('emf'):
-            self.libreoffice_conversion(request.file_path, convert_to="png")
-        elif request.file_type == 'document/office/onenote':
-            with open(os.path.join(self.working_directory, request.file_name), 'wb+') as temp_one:
-                temp_one.write(request.file_contents)
-                temp_one.flush()
-                subprocess.run(['one2html', '-i', temp_one.name, '-o', self.working_directory],
-                               capture_output=True)
-            # Cleanup files
-            os.remove(os.path.join(self.working_directory, request.file_name))
-            for root, _, files in os.walk(self.working_directory):
-                for file in files:
-                    file_path = os.path.join(root, file)
-                    dir = os.path.dirname(file_path)
-                    if self.working_directory.endswith(dir):
-                        dir = ''
-                    imgkit.from_file(file_path, os.path.join(self.working_directory, f'{dir}_{file}_output.jpg'))
+            if not aspose_cls and request.file_type.startswith('document/office'):
+                self.log.warning(f'Aspose unable to handle: {request.file_type}')
+                return
+
+            with tempfile.NamedTemporaryFile() as tmp_file:
+                doc = aspose_cls(request.file_path)
+                doc.save(tmp_file.name, save_format_cls.PDF)
+                tmp_file.seek(0)
+                self.pdf_to_images(tmp_file.name, max_pages)
 
     def execute(self, request):
         start = time()

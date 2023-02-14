@@ -19,9 +19,6 @@ from document_preview.helper.emlrender import processEml as eml2image
 from aspose.words import Document, SaveFormat as WordsSaveFormat
 
 
-WEBP_MAX_SIZE = 16383
-
-
 class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
@@ -51,7 +48,7 @@ class DocumentPreview(ServiceBase):
             # Convert MSG to EML where applicable
             if request.file_type == 'document/office/email':
                 with tempfile.NamedTemporaryFile() as tmp:
-                    subprocess.run(['msgconvert', '-outfile', tmp.name, request.file_path])
+                    subprocess.run(['msgconvert', '-outfile', tmp.name, request.file_path], capture_output=True)
                     tmp.seek(0)
                     file_contents = tmp.read()
 
@@ -69,10 +66,11 @@ class DocumentPreview(ServiceBase):
 
                 expected_output_dir = f'{temp_file.name}_content/'
                 if os.path.exists(expected_output_dir):
-                    # Copy to working directory under presumed output filenames
-                    shutil.copyfile(
-                        os.path.join(expected_output_dir, f'ConvertImage_{os.path.basename(temp_file.name)}.png'),
-                        os.path.join(self.working_directory, f'output_{0}'))
+                    expected_fn = os.path.join(expected_output_dir,
+                                               f'ConvertImage_{os.path.basename(temp_file.name)}.png')
+                    if os.path.getsize(expected_fn):
+                        # Copy to working directory under presumed output filenames
+                        shutil.copyfile(expected_fn, os.path.join(self.working_directory, 'output_0'))
         else:
             # Word/Excel/Powerpoint
             aspose_cls, save_format_cls = {
@@ -97,6 +95,7 @@ class DocumentPreview(ServiceBase):
 
         # Attempt to render documents given and dump them to the working directory
         max_pages = int(request.get_param('max_pages_rendered'))
+        save_ocr_output = request.get_param('save_ocr_output').lower()
         try:
             self.render_documents(request, max_pages)
         except Exception as e:
@@ -109,10 +108,25 @@ class DocumentPreview(ServiceBase):
             previews = [s for s in os.listdir(self.working_directory) if "output" in s]
             image_section = ResultImageSection(request,  "Successfully extracted the preview.")
             heur_id = 1 if request.deep_scan or request.get_param('run_ocr') else None
-            [image_section.add_image(f"{self.working_directory}/{preview}",
-                                     name=f"page_{str(i).zfill(3)}.jpeg", description=f"Here's the preview for page {i}",
-                                     ocr_heuristic_id=heur_id)
-             for i, preview in enumerate(natsorted(previews))]
+            for i, preview in enumerate(natsorted(previews)):
+                ocr_io = tempfile.NamedTemporaryFile('w', delete=False) if save_ocr_output != 'no' else None
+                img_name = f"page_{str(i).zfill(3)}.jpeg"
+                image_section.add_image(f"{self.working_directory}/{preview}", name=img_name,
+                                        description=f"Here's the preview for page {i}",
+                                        ocr_heuristic_id=heur_id, ocr_io=ocr_io)
+                # Write OCR output as specified by submissions params
+                if save_ocr_output == 'no':
+                    continue
+                else:
+                    # Write content to disk to be uploaded
+                    if save_ocr_output == 'as_extracted':
+                        request.add_extracted(ocr_io.name, f'{img_name}_ocr_output',
+                                              description="OCR Output")
+                    elif save_ocr_output == 'as_supplementary':
+                        request.add_supplementary(ocr_io.name, f'{img_name}_ocr_output',
+                                                  description="OCR Output")
+                    else:
+                        self.log.warning(f'Unknown save method for OCR given: {save_ocr_output}')
 
             result.add_section(image_section)
         request.result = result

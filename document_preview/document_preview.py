@@ -69,10 +69,11 @@ class DocumentPreview(ServiceBase):
 
                 expected_output_dir = f'{temp_file.name}_content/'
                 if os.path.exists(expected_output_dir):
-                    # Copy to working directory under presumed output filenames
-                    shutil.copyfile(
-                        os.path.join(expected_output_dir, f'ConvertImage_{os.path.basename(temp_file.name)}.png'),
-                        os.path.join(self.working_directory, f'output_{0}'))
+                    expected_fn = os.path.join(expected_output_dir,
+                                               f'ConvertImage_{os.path.basename(temp_file.name)}.png')
+                    if os.path.getsize(expected_fn):
+                        # Copy to working directory under presumed output filenames
+                        shutil.copyfile(expected_fn, os.path.join(self.working_directory, 'output_0'))
         else:
             # Word/Excel/Powerpoint
             aspose_cls, save_format_cls = {

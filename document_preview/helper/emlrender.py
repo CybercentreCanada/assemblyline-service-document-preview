@@ -27,6 +27,7 @@ except:
 
 try:
     from PIL import Image
+    Image.MAX_IMAGE_PIXELS = 2147483647
 except:
     print('[ERROR] pillow module not installed ("pip install pillow")')
     sys.exit(1)

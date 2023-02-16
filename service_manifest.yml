@@ -3,7 +3,7 @@ version: $SERVICE_TAG
 description: Use OCR to detect for signs of malicious behaviour in Office and PDF files
 
 accepts: document/(pdf$|office/.*|email)
-rejects: empty|metadata/.*
+rejects: empty|metadata/.*|document/office/onenote
 
 stage: CORE
 category: Static Analysis

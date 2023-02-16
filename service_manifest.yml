@@ -3,7 +3,7 @@ version: $SERVICE_TAG
 description: Use OCR to detect for signs of malicious behaviour in Office and PDF files
 
 accepts: document/(pdf$|office/.*|email)
-rejects: empty|metadata/.*
+rejects: empty|metadata/.*|document/office/onenote
 
 stage: CORE
 category: Static Analysis
@@ -32,6 +32,22 @@ submission_params:
     type: bool
     value: false
     default: false
+
+  - name: save_ocr_output
+    type: list
+    value: "no"
+    default: "no"
+    list: ['no', 'as_extracted', 'as_supplementary']
+
+
+config:
+  # List of OCR terms to override defaults in service base for detection
+  # See: https://github.com/CybercentreCanada/assemblyline-v4-service/blob/master/assemblyline_v4_service/common/extractor/ocr.py
+  ocr:
+    banned: [] # Banned terms
+    macros: [] # Terms that indicate macros
+    ransomware: [] # Terms that indicate ransomware
+
 
 heuristics:
   - heur_id: 1

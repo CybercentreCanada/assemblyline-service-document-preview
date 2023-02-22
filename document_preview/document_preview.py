@@ -68,6 +68,15 @@ class DocumentPreview(ServiceBase):
             eml2image(file_contents, self.working_directory, self.log,
                       load_ext_images=self.service_attributes.docker_config.allow_internet_access,
                       load_images=request.get_param('load_email_images'))
+        # HTML
+        elif request.file_type == "code/html":
+            with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
+                tmp_html.write(request.file_contents)
+                tmp_html.flush()
+                with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
+                    subprocess.run(['google-chrome', '--headless', '--no-sandbox', '--hide-scrollbars',
+                                   f'--print-to-pdf={tmp_pdf.name}', tmp_html.name], capture_output=True)
+                    self.pdf_to_images(tmp_pdf.name, max_pages)
 
     def execute(self, request):
         start = time()

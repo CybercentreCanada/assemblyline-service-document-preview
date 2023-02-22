@@ -22,6 +22,10 @@ RUN dpkg -i LibreOffice_${LIBRE_BUILD_VERSION}*/DEBS/*.deb && rm -rf LibreOffice
 RUN apt-get install -y libdbus-1-3 libcups2 libsm6 libice6
 RUN ln -n -s /opt/libreoffice${LIBRE_VERSION} /usr/lib/libreoffice
 
+# Install Chrome for headless rendering of HTML documents
+RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
+    apt install -y ./google-chrome-stable_current_amd64.deb && rm -f ./google-chrome-stable_current_amd64.deb
+
 # Switch to assemblyline user
 USER assemblyline
 

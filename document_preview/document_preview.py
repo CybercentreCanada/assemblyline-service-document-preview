@@ -9,6 +9,7 @@ from time import time
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.result import Result, ResultImageSection
 from assemblyline_v4_service.common.request import ServiceRequest as Request
+from assemblyline_v4_service.common.helper import get_service_manifest
 
 from document_preview.helper.emlrender import processEml as eml2image
 
@@ -16,6 +17,7 @@ from document_preview.helper.emlrender import processEml as eml2image
 class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
+        self.has_internet_access = get_service_manifest().get('docker_config', {}).get('internet_access', False)
 
     def start(self):
         self.log.debug("Document preview service started")
@@ -69,7 +71,7 @@ class DocumentPreview(ServiceBase):
                       load_ext_images=self.service_attributes.docker_config.allow_internet_access,
                       load_images=request.get_param('load_email_images'))
         # HTML
-        elif request.file_type == "code/html":
+        elif request.file_type == "code/html" and self.has_internet_access:
             with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
                 tmp_html.write(request.file_contents)
                 tmp_html.flush()

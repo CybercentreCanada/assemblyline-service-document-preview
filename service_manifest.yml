@@ -55,8 +55,9 @@ heuristics:
     description: Suspicious verbage found in OCR inspection.
     score: 0
     signature_score_map:
-      macros: 100
-      ransomware: 100
+      macros_strings: 100
+      ransomware_strings: 100
+      banned_strings: 1
     filetype: "*"
 
 docker_config:

@@ -50,7 +50,6 @@ config:
   chome_proxy_server: "" # Passed to --proxy-server arg for 'google-chrome'
 
 
-
 heuristics:
   - heur_id: 1
     name: OCR Detection found

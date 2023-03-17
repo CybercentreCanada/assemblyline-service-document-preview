@@ -76,8 +76,11 @@ class DocumentPreview(ServiceBase):
                 tmp_html.write(request.file_contents)
                 tmp_html.flush()
                 with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
-                    subprocess.run(['google-chrome', '--headless', '--no-sandbox', '--hide-scrollbars',
-                                   f'--print-to-pdf={tmp_pdf.name}', tmp_html.name], capture_output=True)
+                    cmd = ['google-chrome', '--headless', '--no-sandbox', '--hide-scrollbars',
+                           f'--print-to-pdf={tmp_pdf.name}', tmp_html.name]
+                    if self.config.get('chrome_proxy_server'):
+                        cmd.insert(-1, f"--proxy-server={self.config['chrome_proxy_server']}")
+                    subprocess.run(cmd, capture_output=True)
                     self.pdf_to_images(tmp_pdf.name, max_pages)
 
     def execute(self, request):

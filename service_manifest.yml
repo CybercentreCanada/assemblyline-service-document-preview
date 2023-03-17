@@ -47,6 +47,8 @@ config:
     banned: [] # Banned terms
     macros: [] # Terms that indicate macros
     ransomware: [] # Terms that indicate ransomware
+  chome_proxy_server: "" # Passed to --proxy-server arg for 'google-chrome'
+
 
 
 heuristics:

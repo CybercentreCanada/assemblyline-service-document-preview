@@ -2,17 +2,12 @@ ARG branch=latest
 FROM cccs/assemblyline-v4-service-base:$branch
 
 ENV SERVICE_PATH document_preview.document_preview.DocumentPreview
-ENV LIBRE_VERSION=7.4
-ENV LIBRE_BUILD_VERSION=${LIBRE_VERSION}.4
+ENV LIBRE_VERSION=7.5
+ENV LIBRE_BUILD_VERSION=${LIBRE_VERSION}.1
 
 USER root
 
-RUN mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
-RUN apt-get update && apt-get install -y wget tesseract-ocr libemail-outlook-message-perl libgdiplus unzip
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN apt-get install -y poppler-utils ./wkhtmltox_0.12.6-1.buster_amd64.deb --no-install-recommends &&\
-    rm -f ./wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN pip install pdf2image Pillow natsort imgkit compoundfiles compressed_rtf pytesseract
+RUN apt-get update && apt-get install -y wget
 
 # Install Libreoffice
 RUN pip install unoconv
@@ -21,6 +16,13 @@ RUN tar zxvf LibreOffice_${LIBRE_BUILD_VERSION}_Linux_x86-64_deb.tar.gz && rm -f
 RUN dpkg -i LibreOffice_${LIBRE_BUILD_VERSION}*/DEBS/*.deb && rm -rf LibreOffice_${LIBRE_BUILD_VERSION}*
 RUN apt-get install -y libdbus-1-3 libcups2 libsm6 libice6
 RUN ln -n -s /opt/libreoffice${LIBRE_VERSION} /usr/lib/libreoffice
+
+RUN mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
+RUN apt-get install -y tesseract-ocr libemail-outlook-message-perl libgdiplus unzip
+RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
+RUN apt-get install -y poppler-utils ./wkhtmltox_0.12.6-1.buster_amd64.deb --no-install-recommends &&\
+    rm -f ./wkhtmltox_0.12.6-1.buster_amd64.deb
+RUN pip install pdf2image Pillow natsort imgkit compoundfiles compressed_rtf pytesseract
 
 # Install Chrome for headless rendering of HTML documents
 RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \

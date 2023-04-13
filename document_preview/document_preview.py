@@ -46,8 +46,8 @@ class DocumentPreview(ServiceBase):
             i += 1
 
     def render_documents(self, request: Request, max_pages=1):
-        # Word/Excel/Powerpoint
-        if any(request.file_type == f'document/office/{ms_product}' for ms_product in ['word', 'excel', 'powerpoint']):
+        # Word/Excel/Powerpoint/RTF
+        if any(request.file_type == f'document/office/{ms_product}' for ms_product in ['word', 'excel', 'powerpoint', 'rtf']):
             orientation = "landscape" if any(request.file_type.endswith(type)
                                              for type in ['excel', 'powerpoint']) else "portrait"
             converted = self.office_conversion(request.file_path, orientation, max_pages)

@@ -68,7 +68,7 @@ class DocumentPreview(ServiceBase):
             # Render EML as PNG
             # If we have internet access, we'll attempt to load external images
             eml2image(file_contents, self.working_directory, self.log,
-                      load_ext_images=self.service_attributes.docker_config.allow_internet_access,
+                      load_ext_images=self.has_internet_access,
                       load_images=request.get_param('load_email_images'))
         # HTML
         elif request.file_type == "code/html" and self.has_internet_access:

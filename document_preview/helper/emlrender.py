@@ -106,7 +106,7 @@ def processEml(data, output_dir, logger, load_ext_images=False, load_images=Fals
 
     imgkitOptions = {'load-error-handling': 'skip'}
     if not load_ext_images:
-        imgkitOptions.update({'no-images': None})
+        imgkitOptions.update({'no-images': None, 'disable-javascript': None})
     # imgkitOptions.update({ 'quiet': None })
     imagesList = []
 

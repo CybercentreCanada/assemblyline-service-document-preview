@@ -18,6 +18,7 @@ class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
         self.has_internet_access = get_service_manifest().get('docker_config', {}).get('allow_internet_access', False)
+        self.log.info(f"Service is configured {'with' if self.has_internet_access else 'without'} internet access")
 
     def start(self):
         self.log.debug("Document preview service started")
@@ -62,7 +63,7 @@ class DocumentPreview(ServiceBase):
             # Convert MSG to EML where applicable
             if request.file_type == 'document/office/email':
                 with tempfile.NamedTemporaryFile() as tmp:
-                    subprocess.run(['msgconvert', '-outfile', tmp.name, request.file_path])
+                    subprocess.run(['msgconvert', '-outfile', tmp.name, request.file_path], capture_output=True)
                     tmp.seek(0)
                     file_contents = tmp.read()
             # Render EML as PNG

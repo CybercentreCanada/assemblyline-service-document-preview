@@ -18,6 +18,7 @@ class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
         self.has_internet_access = get_service_manifest().get('docker_config', {}).get('allow_internet_access', False)
+        self.log.info(f"Service is configured {'with' if self.has_internet_access else 'without'} internet access")
 
     def start(self):
         self.log.debug("Document preview service started")

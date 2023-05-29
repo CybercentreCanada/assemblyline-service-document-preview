@@ -10,14 +10,15 @@
 # - "offline" mode when rendering HTML code
 #
 
-import os
-import sys
+import base64
 import email
 import email.header
+import os
 import quopri
-import base64
-import regex
+import sys
 from tempfile import NamedTemporaryFile
+
+import regex
 
 try:
     import imgkit

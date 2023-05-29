@@ -1,17 +1,15 @@
 import os
 import subprocess
 import tempfile
-
-from natsort import natsorted
-from pdf2image import convert_from_path
 from time import time
 
 from assemblyline_v4_service.common.base import ServiceBase
-from assemblyline_v4_service.common.result import Result, ResultImageSection
-from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.helper import get_service_manifest
-
+from assemblyline_v4_service.common.request import ServiceRequest as Request
+from assemblyline_v4_service.common.result import Result, ResultImageSection
 from document_preview.helper.emlrender import processEml as eml2image
+from natsort import natsorted
+from pdf2image import convert_from_path
 
 
 class DocumentPreview(ServiceBase):

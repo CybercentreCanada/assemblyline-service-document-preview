@@ -8,7 +8,7 @@ from assemblyline_v4_service.common.helper import get_service_manifest
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import Result, ResultImageSection
 from natsort import natsorted
-from pdf2image import convert_from_path
+from pdf2image import convert_from_path, pdfinfo_from_path
 
 from document_preview.helper.emlrender import processEml as eml2image
 
@@ -146,11 +146,7 @@ class DocumentPreview(ServiceBase):
             )
             heur_id = 1 if request.deep_scan or request.get_param("run_ocr") else None
             for i, preview in enumerate(natsorted(previews)):
-                ocr_io = (
-                    tempfile.NamedTemporaryFile("w", delete=False)
-                    if save_ocr_output != "no"
-                    else None
-                )
+                ocr_io = tempfile.NamedTemporaryFile("w", delete=False)
                 img_name = f"page_{str(i).zfill(3)}.jpeg"
                 image_section.add_image(
                     f"{self.working_directory}/{preview}",
@@ -159,6 +155,21 @@ class DocumentPreview(ServiceBase):
                     ocr_heuristic_id=heur_id,
                     ocr_io=ocr_io,
                 )
+
+                if request.file_type == "document/pdf":
+                    with open(ocr_io.name, "r") as fp:
+                        ocr_content = fp.read()
+                    try:
+                        if (
+                            pdfinfo_from_path(request.file_path)["Pages"] == 1
+                            and "click" in ocr_content.lower()
+                        ):
+                            # Suspected document is part of a phishing campaign
+                            image_section.set_heuristic(2)
+                    except Exception:
+                        # There was a problem fetching the page count from the PDF, move on..
+                        pass
+
                 # Write OCR output as specified by submissions params
                 if save_ocr_output == "no":
                     continue

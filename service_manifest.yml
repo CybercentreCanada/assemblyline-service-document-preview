@@ -60,6 +60,12 @@ heuristics:
       banned_strings: 1
     filetype: "*"
 
+  - heur_id: 2
+    name: Potential Phishing
+    description: Single page document including a link to 'click'
+    score: 300
+    filetype: "*"
+
 docker_config:
   image: ${REGISTRY}cccs/assemblyline-service-document-preview:$SERVICE_TAG
   cpu_cores: 1

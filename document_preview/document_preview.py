@@ -153,7 +153,6 @@ class DocumentPreview(ServiceBase):
                 )
                 ocr_io = tempfile.NamedTemporaryFile("w", delete=False)
                 img_name = f"page_{str(i).zfill(3)}.jpeg"
-                print(ocr_heur_id)
                 image_section.add_image(
                     f"{self.working_directory}/{preview}",
                     name=img_name,

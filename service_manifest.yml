@@ -23,10 +23,11 @@ submission_params:
     value: 1
     default: 1
 
-  - name: run_ocr
-    type: bool
-    value: false
-    default: false
+  # Run OCR on the first N pages
+  - name: run_ocr_on_first_n_pages
+    type: int
+    value: 1
+    default: 1
 
   - name: load_email_images
     type: bool

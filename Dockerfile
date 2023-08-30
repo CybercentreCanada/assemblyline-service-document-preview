@@ -7,7 +7,7 @@ ENV LIBRE_BUILD_VERSION=${LIBRE_VERSION}.5
 
 USER root
 
-RUN apt-get update && apt-get install -y wget
+RUN apt-get update && apt-get install -y wget gnupg
 
 # Install Libreoffice
 RUN pip install unoconv
@@ -16,6 +16,12 @@ RUN tar zxvf LibreOffice_${LIBRE_BUILD_VERSION}_Linux_x86-64_deb.tar.gz && rm -f
 RUN dpkg -i LibreOffice_${LIBRE_BUILD_VERSION}*/DEBS/*.deb && rm -rf LibreOffice_${LIBRE_BUILD_VERSION}*
 RUN apt-get install -y libdbus-1-3 libcups2 libsm6 libice6
 RUN ln -n -s /opt/libreoffice${LIBRE_VERSION} /usr/lib/libreoffice
+
+# Edit sources for Tesseract 5.0.x
+RUN echo "deb https://notesalexp.org/tesseract-ocr5/buster/ buster main" \
+    | tee /etc/apt/sources.list.d/notesalexp.list > /dev/null
+RUN wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add -
+RUN apt-get update
 
 RUN mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
 RUN apt-get install -y tesseract-ocr libemail-outlook-message-perl libgdiplus unzip

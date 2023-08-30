@@ -144,15 +144,21 @@ class DocumentPreview(ServiceBase):
             image_section = ResultImageSection(
                 request, "Successfully extracted the preview."
             )
-            heur_id = 1 if request.deep_scan or request.get_param("run_ocr") else None
+            run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")
             for i, preview in enumerate(natsorted(previews)):
+                # Trigger OCR on the first N pages as specified in the submission
+                # Otherwise, just add the image without performing OCR analysis
+                ocr_heur_id = (
+                    1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
+                )
                 ocr_io = tempfile.NamedTemporaryFile("w", delete=False)
                 img_name = f"page_{str(i).zfill(3)}.jpeg"
+                print(ocr_heur_id)
                 image_section.add_image(
                     f"{self.working_directory}/{preview}",
                     name=img_name,
                     description=f"Here's the preview for page {i}",
-                    ocr_heuristic_id=heur_id,
+                    ocr_heuristic_id=ocr_heur_id,
                     ocr_io=ocr_io,
                 )
 

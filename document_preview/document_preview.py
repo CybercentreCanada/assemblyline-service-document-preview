@@ -4,7 +4,6 @@ import tempfile
 from time import time
 
 from assemblyline_v4_service.common.base import ServiceBase
-from assemblyline_v4_service.common.helper import get_service_manifest
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import Result, ResultImageSection
 from natsort import natsorted
@@ -16,14 +15,7 @@ from document_preview.helper.emlrender import processEml as eml2image
 class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
-        self.has_internet_access = (
-            get_service_manifest()
-            .get("docker_config", {})
-            .get("allow_internet_access", False)
-        )
-        self.log.info(
-            f"Service is configured {'with' if self.has_internet_access else 'without'} internet access"
-        )
+        self.html_render_timeout = config.get("html_render_timeout", 30)
 
     def start(self):
         self.log.debug("Document preview service started")
@@ -70,15 +62,9 @@ class DocumentPreview(ServiceBase):
             for ms_product in ["word", "excel", "powerpoint", "rtf"]
         ):
             orientation = (
-                "landscape"
-                if any(
-                    request.file_type.endswith(type) for type in ["excel", "powerpoint"]
-                )
-                else "portrait"
+                "landscape" if any(request.file_type.endswith(type) for type in ["excel", "powerpoint"]) else "portrait"
             )
-            converted = self.office_conversion(
-                request.file_path, orientation, max_pages
-            )
+            converted = self.office_conversion(request.file_path, orientation, max_pages)
             if converted[0]:
                 self.pdf_to_images(self.working_directory + "/" + converted[1])
         # PDF
@@ -102,27 +88,32 @@ class DocumentPreview(ServiceBase):
                 file_contents,
                 self.working_directory,
                 self.log,
-                load_ext_images=self.has_internet_access,
+                load_ext_images=False,
                 load_images=request.get_param("load_email_images"),
             )
         # HTML
-        elif request.file_type == "code/html" and self.has_internet_access:
+        elif request.file_type == "code/html":
             with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
                 tmp_html.write(request.file_contents)
                 tmp_html.flush()
                 with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
-                    subprocess.run(
-                        [
-                            "google-chrome",
-                            "--headless",
-                            "--no-sandbox",
-                            "--hide-scrollbars",
-                            f"--print-to-pdf={tmp_pdf.name}",
-                            tmp_html.name,
-                        ],
-                        capture_output=True,
-                    )
-                    self.pdf_to_images(tmp_pdf.name, max_pages)
+                    try:
+                        subprocess.run(
+                            [
+                                "google-chrome",
+                                "--headless",
+                                "--no-sandbox",
+                                "--hide-scrollbars",
+                                f"--print-to-pdf={tmp_pdf.name}",
+                                tmp_html.name,
+                            ],
+                            capture_output=True,
+                            timeout=self.html_render_timeout,
+                        )
+                        self.pdf_to_images(tmp_pdf.name, max_pages)
+                    except subprocess.TimeoutExpired:
+                        # Unable to render HTML in given time
+                        pass
 
     def execute(self, request):
         start = time()
@@ -141,16 +132,12 @@ class DocumentPreview(ServiceBase):
         # Create an image gallery section to show the renderings
         if any("output" in s for s in os.listdir(self.working_directory)):
             previews = [s for s in os.listdir(self.working_directory) if "output" in s]
-            image_section = ResultImageSection(
-                request, "Successfully extracted the preview."
-            )
+            image_section = ResultImageSection(request, "Successfully extracted the preview.")
             run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")
             for i, preview in enumerate(natsorted(previews)):
                 # Trigger OCR on the first N pages as specified in the submission
                 # Otherwise, just add the image without performing OCR analysis
-                ocr_heur_id = (
-                    1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
-                )
+                ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
                 ocr_io = tempfile.NamedTemporaryFile("w", delete=False)
                 img_name = f"page_{str(i).zfill(3)}.jpeg"
                 image_section.add_image(
@@ -165,10 +152,7 @@ class DocumentPreview(ServiceBase):
                     with open(ocr_io.name, "r") as fp:
                         ocr_content = fp.read()
                     try:
-                        if (
-                            pdfinfo_from_path(request.file_path)["Pages"] == 1
-                            and "click" in ocr_content.lower()
-                        ):
+                        if pdfinfo_from_path(request.file_path)["Pages"] == 1 and "click" in ocr_content.lower():
                             # Suspected document is part of a phishing campaign
                             image_section.set_heuristic(2)
                     except Exception:
@@ -193,9 +177,7 @@ class DocumentPreview(ServiceBase):
                             description="OCR Output",
                         )
                     else:
-                        self.log.warning(
-                            f"Unknown save method for OCR given: {save_ocr_output}"
-                        )
+                        self.log.warning(f"Unknown save method for OCR given: {save_ocr_output}")
 
             result.add_section(image_section)
         request.result = result

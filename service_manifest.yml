@@ -38,8 +38,7 @@ submission_params:
     type: list
     value: "no"
     default: "no"
-    list: ['no', 'as_extracted', 'as_supplementary']
-
+    list: ["no", "as_extracted", "as_supplementary"]
 
 config:
   # List of OCR terms to override defaults in service base for detection
@@ -48,7 +47,7 @@ config:
     banned: [] # Banned terms
     macros: [] # Terms that indicate macros
     ransomware: [] # Terms that indicate ransomware
-
+  html_render_timeout: 30
 
 heuristics:
   - heur_id: 1

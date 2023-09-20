@@ -179,6 +179,7 @@ class DocumentPreview(ServiceBase):
                     else:
                         self.log.warning(f"Unknown save method for OCR given: {save_ocr_output}")
 
+            image_section.promote_as_screenshot()
             result.add_section(image_section)
         request.result = result
         self.log.debug(f"Runtime: {time() - start}s")

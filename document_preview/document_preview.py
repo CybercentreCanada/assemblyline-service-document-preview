@@ -5,7 +5,7 @@ from time import time
 
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
-from assemblyline_v4_service.common.result import Result, ResultImageSection
+from assemblyline_v4_service.common.result import Heuristic, Result, ResultImageSection, ResultTextSection
 from natsort import natsorted
 from pdf2image import convert_from_path, pdfinfo_from_path
 
@@ -132,7 +132,7 @@ class DocumentPreview(ServiceBase):
         # Create an image gallery section to show the renderings
         if any("output" in s for s in os.listdir(self.working_directory)):
             previews = [s for s in os.listdir(self.working_directory) if "output" in s]
-            image_section = ResultImageSection(request, "Successfully extracted the preview.")
+            image_section = ResultImageSection(request, "Preview Image(s)")
             run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")
             for i, preview in enumerate(natsorted(previews)):
                 # Trigger OCR on the first N pages as specified in the submission
@@ -154,7 +154,12 @@ class DocumentPreview(ServiceBase):
                     try:
                         if pdfinfo_from_path(request.file_path)["Pages"] == 1 and "click" in ocr_content.lower():
                             # Suspected document is part of a phishing campaign
-                            image_section.set_heuristic(2)
+                            ResultTextSection(
+                                "Suspected Phishing",
+                                body='Single-paged document containing the term "click"',
+                                heuristic=Heuristic(2),
+                                parent=result,
+                            )
                     except Exception:
                         # There was a problem fetching the page count from the PDF, move on..
                         pass

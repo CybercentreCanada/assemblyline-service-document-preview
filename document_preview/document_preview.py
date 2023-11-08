@@ -7,9 +7,25 @@ from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import Heuristic, Result, ResultImageSection, ResultTextSection
 from natsort import natsorted
-from pdf2image import convert_from_path, pdfinfo_from_path
 
 from document_preview.helper.emlrender import processEml as eml2image
+
+
+def pdfinfo_from_path(fp: str):
+    pdfinfo = {}
+    for info in subprocess.run(["pdfinfo", fp], capture_output=True).stdout.strip().decode().split("\n"):
+        k, v = info.split(":", 1)
+        # Clean up spacing
+        v = v.lstrip()
+        pdfinfo[k] = v
+    pdfinfo
+
+
+def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None):
+    pdf_conv_command = ["pdftoppm", "-jpeg", "-f", str(first_page)]
+    if last_page:
+        pdf_conv_command += ["-l", str(last_page)]
+    subprocess.run(pdf_conv_command + [fp, os.path.join(output_directory, "output")], capture_output=True)
 
 
 class DocumentPreview(ServiceBase):
@@ -48,12 +64,7 @@ class DocumentPreview(ServiceBase):
             return (False, None)
 
     def pdf_to_images(self, file, max_pages=None):
-        pages = convert_from_path(file, first_page=1, last_page=max_pages)
-
-        i = 0
-        for page in pages:
-            page.save(self.working_directory + "/output_" + str(i) + ".jpeg")
-            i += 1
+        convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)
 
     def render_documents(self, request: Request, max_pages=1):
         # Word/Excel/Powerpoint/RTF

@@ -3,7 +3,7 @@ FROM cccs/assemblyline-v4-service-base:$branch
 
 ENV SERVICE_PATH document_preview.document_preview.DocumentPreview
 ENV LIBRE_VERSION=7.6
-ENV LIBRE_BUILD_VERSION=${LIBRE_VERSION}.2
+ENV LIBRE_BUILD_VERSION=${LIBRE_VERSION}.3
 
 USER root
 

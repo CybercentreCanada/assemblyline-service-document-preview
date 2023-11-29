@@ -15,11 +15,12 @@ RUN tar zxvf LibreOffice_${LIBRE_BUILD_VERSION}_Linux_x86-64_deb.tar.gz && rm -f
 RUN dpkg -i LibreOffice_${LIBRE_BUILD_VERSION}*/DEBS/*.deb && rm -rf LibreOffice_${LIBRE_BUILD_VERSION}*
 RUN apt-get install -y libdbus-1-3 libcups2 libsm6 libice6
 RUN ln -n -s /opt/libreoffice${LIBRE_VERSION} /usr/lib/libreoffice
+# Get pip to install unoserver with LibreOffice's Python
 WORKDIR /opt/libreoffice${LIBRE_VERSION}/program/
 RUN wget https://bootstrap.pypa.io/get-pip.py
 RUN ./python get-pip.py && ./python -m pip install unoserver
 
-# Edit sources for Tesseract 5.0.xa
+# Edit sources for Tesseract 5.0.x
 RUN echo "deb https://notesalexp.org/tesseract-ocr5/buster/ buster main" \
     | tee /etc/apt/sources.list.d/notesalexp.list > /dev/null
 RUN wget -O - https://notesalexp.org/debian/alexp_key.asc | apt-key add -

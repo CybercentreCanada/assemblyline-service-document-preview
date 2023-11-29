@@ -35,32 +35,37 @@ class DocumentPreview(ServiceBase):
 
     def start(self):
         self.log.debug("Document preview service started")
+        # Start unoserver that is used for LibreOffice conversions to PDF
+        subprocess.Popen(
+            [f"/opt/libreoffice{os.environ.get('LIBRE_VERSION', '7.6')}/program/python", "-m", "unoserver.server"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
 
     def stop(self):
         self.log.debug("Document preview service ended")
 
     def office_conversion(self, file, orientation="portrait", page_range_end=2):
-        subprocess.run(
+        proc = subprocess.run(
             [
-                "unoconv",
-                "-f",
+                "unoconvert",
+                "--convert-to",
                 "pdf",
-                "-e",
+                "--filter-option",
                 f"PageRange=1-{page_range_end}",
-                "-P",
+                "--filter-option",
                 f"PaperOrientation={orientation}",
-                "-P",
+                "--filter-option",
                 "PaperFormat=A3",
-                "-o",
-                f"{self.working_directory}/",
                 file,
+                f"{self.working_directory}/converted.pdf",
             ],
             capture_output=True,
         )
-        converted_file = [s for s in os.listdir(self.working_directory) if ".pdf" in s]
-        if converted_file:
-            return (True, converted_file[0])
+        if "converted.pdf" in os.listdir(self.working_directory):
+            return (True, "converted.pdf")
         else:
+            self.log.warning(proc.stderr)
             return (False, None)
 
     def pdf_to_images(self, file, max_pages=None):

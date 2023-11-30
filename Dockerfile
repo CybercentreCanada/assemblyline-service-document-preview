@@ -7,18 +7,7 @@ ENV LIBRE_BUILD_VERSION=${LIBRE_VERSION}.3
 
 USER root
 
-RUN apt-get update && apt-get install -y wget gnupg
-
-# Install Libreoffice
-RUN wget https://tdf.mirror.rafal.ca/libreoffice/stable/${LIBRE_BUILD_VERSION}/deb/x86_64/LibreOffice_${LIBRE_BUILD_VERSION}_Linux_x86-64_deb.tar.gz
-RUN tar zxvf LibreOffice_${LIBRE_BUILD_VERSION}_Linux_x86-64_deb.tar.gz && rm -f LibreOffice_${LIBRE_BUILD_VERSION}_Linux_x86-64_deb.tar.gz
-RUN dpkg -i LibreOffice_${LIBRE_BUILD_VERSION}*/DEBS/*.deb && rm -rf LibreOffice_${LIBRE_BUILD_VERSION}*
-RUN apt-get install -y libdbus-1-3 libcups2 libsm6 libice6
-RUN ln -n -s /opt/libreoffice${LIBRE_VERSION} /usr/lib/libreoffice
-# Get pip to install unoserver with LibreOffice's Python
-WORKDIR /opt/libreoffice${LIBRE_VERSION}/program/
-RUN wget https://bootstrap.pypa.io/get-pip.py
-RUN ./python get-pip.py && ./python -m pip install unoserver
+RUN apt-get update && apt-get install -y wget gnupg libreoffice
 
 # Edit sources for Tesseract 5.0.x
 RUN echo "deb https://notesalexp.org/tesseract-ocr5/buster/ buster main" \
@@ -37,7 +26,6 @@ RUN pip install Pillow==9.5.0 natsort imgkit compoundfiles compressed_rtf pytess
 RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
     apt install -y ./google-chrome-stable_current_amd64.deb && rm -f ./google-chrome-stable_current_amd64.deb
 
-RUN mv /usr/local/bin/libreoffice${LIBRE_VERSION} /usr/local/bin/libreoffice
 # Switch to assemblyline user
 USER assemblyline
 
@@ -48,5 +36,7 @@ COPY . .
 ARG version=4.0.0.dev1
 USER root
 RUN sed -i -e "s/\$SERVICE_TAG/$version/g" service_manifest.yml
+# Add uno package to PYTHONPATH
+ENV PYTHONPATH $PYTHONPATH:/usr/lib/python3/dist-packages/
 
 USER assemblyline

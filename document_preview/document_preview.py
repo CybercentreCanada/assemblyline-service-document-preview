@@ -38,9 +38,10 @@ class DocumentPreview(ServiceBase):
         if not os.path.exists(libre_pid_path):
             # Start unoserver that is used for LibreOffice conversions to PDF
             subprocess.Popen(["unoserver", "-p", libre_pid_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            sleep(3)
             while not os.path.exists(libre_pid_path):
-                # Sleep until PID file is created
-                sleep(3)
+                # Continue sleeping until PID file is created
+                sleep(1)
 
     def start(self):
         self.log.debug("Document preview service started")
@@ -62,6 +63,7 @@ class DocumentPreview(ServiceBase):
                 f"PaperOrientation={orientation}",
                 "--filter-option",
                 "PaperFormat=A3",
+                "--dont-update-index",
                 file,
                 f"{self.working_directory}/converted.pdf",
             ],

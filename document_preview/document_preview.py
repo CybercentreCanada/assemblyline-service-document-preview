@@ -1,7 +1,7 @@
 import os
 import subprocess
 import tempfile
-from time import time
+from time import sleep, time
 
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
@@ -33,20 +33,24 @@ class DocumentPreview(ServiceBase):
         super(DocumentPreview, self).__init__(config)
         self.html_render_timeout = config.get("html_render_timeout", 30)
 
+    def _start_unoserver_if_necessary(self):
+        libre_pid_path = "/tmp/libre_pid"
+        if not os.path.exists(libre_pid_path):
+            # Start unoserver that is used for LibreOffice conversions to PDF
+            subprocess.Popen(["unoserver", "-p", libre_pid_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            while not os.path.exists(libre_pid_path):
+                # Sleep until PID file is created
+                sleep(1)
+
     def start(self):
         self.log.debug("Document preview service started")
-        # Start unoserver that is used for LibreOffice conversions to PDF
-        subprocess.Popen(
-            ["unoserver"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.PIPE,
-            shell=True,
-        )
+        self._start_unoserver_if_necessary()
 
     def stop(self):
         self.log.debug("Document preview service ended")
 
     def office_conversion(self, file, orientation="portrait", page_range_end=2):
+        self._start_unoserver_if_necessary()
         proc = subprocess.run(
             [
                 "unoconvert",
@@ -66,7 +70,7 @@ class DocumentPreview(ServiceBase):
         if "converted.pdf" in os.listdir(self.working_directory):
             return (True, "converted.pdf")
         else:
-            self.log.warning(proc.stderr)
+            raise proc.stderr
             return (False, None)
 
     def pdf_to_images(self, file, max_pages=None):

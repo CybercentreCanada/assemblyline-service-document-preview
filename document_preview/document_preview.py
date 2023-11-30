@@ -36,11 +36,13 @@ class DocumentPreview(ServiceBase):
     def _start_unoserver_if_necessary(self):
         libre_pid_path = "/tmp/libre_pid"
         if not os.path.exists(libre_pid_path):
+            self.log.info("PID FILE MISSING")
             # Start unoserver that is used for LibreOffice conversions to PDF
-            subprocess.Popen(["unoserver", "-p", libre_pid_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            subprocess.Popen(["unoserver", "-p", libre_pid_path])
             sleep(3)
             while not os.path.exists(libre_pid_path):
                 # Continue sleeping until PID file is created
+                self.log.info("SLEEPING")
                 sleep(1)
 
     def start(self):
@@ -72,7 +74,7 @@ class DocumentPreview(ServiceBase):
         if "converted.pdf" in os.listdir(self.working_directory):
             return (True, "converted.pdf")
         else:
-            raise proc.stderr
+            raise Exception(proc.stderr)
             return (False, None)
 
     def pdf_to_images(self, file, max_pages=None):

@@ -18,7 +18,7 @@ def pdfinfo_from_path(fp: str):
         # Clean up spacing
         v = v.lstrip()
         pdfinfo[k] = v
-    pdfinfo
+    return pdfinfo
 
 
 def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None):
@@ -36,13 +36,10 @@ class DocumentPreview(ServiceBase):
     def _start_unoserver_if_necessary(self):
         libre_pid_path = "/tmp/libre_pid"
         if not os.path.exists(libre_pid_path):
-            self.log.info("PID FILE MISSING")
             # Start unoserver that is used for LibreOffice conversions to PDF
-            subprocess.Popen(["unoserver", "-p", libre_pid_path])
-            sleep(3)
+            subprocess.Popen(["unoserver", "-p", libre_pid_path, "-s"])
             while not os.path.exists(libre_pid_path):
                 # Continue sleeping until PID file is created
-                self.log.info("SLEEPING")
                 sleep(1)
 
     def start(self):

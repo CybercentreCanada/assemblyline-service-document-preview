@@ -37,9 +37,10 @@ class DocumentPreview(ServiceBase):
         self.log.debug("Document preview service started")
         # Start unoserver that is used for LibreOffice conversions to PDF
         subprocess.Popen(
-            [f"/opt/libreoffice{os.environ.get('LIBRE_VERSION', '7.6')}/program/python", "-m", "unoserver.server"],
+            ["unoserver"],
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
+            shell=True,
         )
 
     def stop(self):

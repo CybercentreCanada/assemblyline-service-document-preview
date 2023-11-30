@@ -40,7 +40,7 @@ class DocumentPreview(ServiceBase):
             subprocess.Popen(["unoserver", "-p", libre_pid_path], stdout=subprocess.PIPE, stderr=subprocess.PIPE)
             while not os.path.exists(libre_pid_path):
                 # Sleep until PID file is created
-                sleep(1)
+                sleep(3)
 
     def start(self):
         self.log.debug("Document preview service started")

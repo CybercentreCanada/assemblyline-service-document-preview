@@ -158,6 +158,12 @@ class DocumentPreview(ServiceBase):
                     ocr_heuristic_id=ocr_heur_id,
                     ocr_io=ocr_io,
                 )
+                if request.get_param("analyze_render"):
+                    request.add_extracted(
+                        f"{self.working_directory}/{preview}",
+                        name=img_name,
+                        description=f"Here's the preview for page {i}",
+                    )
 
                 if request.file_type == "document/pdf":
                     with open(ocr_io.name, "r") as fp:

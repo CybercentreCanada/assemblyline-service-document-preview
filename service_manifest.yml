@@ -34,6 +34,11 @@ submission_params:
     value: false
     default: false
 
+  - name: analyze_render
+    type: bool
+    value: false
+    default: false
+
   - name: save_ocr_output
     type: list
     value: "no"

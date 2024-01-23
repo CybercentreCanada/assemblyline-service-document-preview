@@ -20,7 +20,7 @@ RUN apt-get install -y tesseract-ocr libemail-outlook-message-perl libgdiplus un
 RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
 RUN apt-get install -y poppler-utils ./wkhtmltox_0.12.6-1.buster_amd64.deb --no-install-recommends &&\
     rm -f ./wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN pip install Pillow==9.5.0 natsort imgkit compoundfiles compressed_rtf pytesseract
+RUN pip install Pillow natsort imgkit compoundfiles compressed_rtf pytesseract
 RUN pip install -U git+https://github.com/cccs-rs/unoserver.git
 
 # Install Chrome for headless rendering of HTML documents

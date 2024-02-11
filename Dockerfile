@@ -25,14 +25,12 @@ RUN apt-get update
 
 RUN mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
 RUN apt-get install -y tesseract-ocr libemail-outlook-message-perl libgdiplus unzip
-RUN wget https://github.com/wkhtmltopdf/packaging/releases/download/0.12.6-1/wkhtmltox_0.12.6-1.buster_amd64.deb
-RUN apt-get install -y poppler-utils ./wkhtmltox_0.12.6-1.buster_amd64.deb --no-install-recommends &&\
-    rm -f ./wkhtmltox_0.12.6-1.buster_amd64.deb
+RUN apt-get install -y poppler-utils wkhtmltopdf
 RUN pip install Pillow==9.5.0 natsort imgkit compoundfiles compressed_rtf pytesseract
 
 # Install Chrome for headless rendering of HTML documents
 RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-    apt install -y ./google-chrome-stable_current_amd64.deb && rm -f ./google-chrome-stable_current_amd64.deb
+    apt install -o DPkg::Options::="--force-confnew" -y ./google-chrome-stable_current_amd64.deb && rm -f ./google-chrome-stable_current_amd64.deb
 
 # Switch to assemblyline user
 USER assemblyline

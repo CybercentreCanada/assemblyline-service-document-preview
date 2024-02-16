@@ -74,4 +74,4 @@ heuristics:
 docker_config:
   image: ${REGISTRY}cccs/assemblyline-service-document-preview:$SERVICE_TAG
   cpu_cores: 1
-  ram_mb: 1024
+  ram_mb: 4096

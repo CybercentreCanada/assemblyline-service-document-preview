@@ -32,3 +32,16 @@ config:
 ```
 
 This will cause the service to **only** use the terms I've specified when looking for `ransomware` terms and is subject to the hit threshold I've defined.
+
+### Term Inclusion/Exclusion
+Let's say, I want to add/remove a set of terms from the default set for `ransomware` detection. Then I can set the following:
+
+```yaml
+config:
+    ocr:
+        ransomware:
+            include: ['bad1', 'bad2', ...]
+            exclude: ['bank account']
+```
+
+This will cause the service to add the terms listed in `include` and remove the terms in `exclude` when looking for `ransomware` terms in OCR detection with the default set.

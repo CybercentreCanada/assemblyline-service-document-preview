@@ -1,3 +1,4 @@
+import json
 import os
 import subprocess
 import tempfile
@@ -6,6 +7,9 @@ from time import time
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import Heuristic, Result, ResultImageSection, ResultTextSection
+
+from base64 import b64decode
+from selenium.webdriver import Chrome, ChromeOptions
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -31,7 +35,16 @@ def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=No
 class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
-        self.html_render_timeout = config.get("html_render_timeout", 30)
+
+        # Set browser to run headless without scrollbars
+        browser_options = ChromeOptions()
+        browser_options.add_argument("--headless")
+        browser_options.add_argument("--no-sandbox")
+        browser_options.add_argument("--hide-scrollbars")
+
+        # Run browser in offline mode only
+        self.browser = Chrome(options=browser_options)
+        self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
 
     def start(self):
         self.log.debug("Document preview service started")
@@ -104,27 +117,34 @@ class DocumentPreview(ServiceBase):
             )
         # HTML
         elif request.file_type == "code/html":
+            # Create a temporary file containing the '.html' extension so Chrome can render the document properly
             with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
                 tmp_html.write(request.file_contents)
                 tmp_html.flush()
                 with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
-                    try:
-                        subprocess.run(
-                            [
-                                "google-chrome",
-                                "--headless",
-                                "--no-sandbox",
-                                "--hide-scrollbars",
-                                f"--print-to-pdf={tmp_pdf.name}",
-                                tmp_html.name,
-                            ],
-                            capture_output=True,
-                            timeout=self.html_render_timeout,
-                        )
-                        self.pdf_to_images(tmp_pdf.name, max_pages)
-                    except subprocess.TimeoutExpired:
-                        # Unable to render HTML in given time
-                        pass
+                    # Load file into browser
+                    self.browser.get(f"file://{tmp_html.name}")
+
+                    # Prepare command to perform Print to PDF
+                    resource = "/session/%s/chromium/send_command_and_get_result" % self.browser.session_id
+                    print_options = {
+                        "landscape": False,
+                        "displayHeaderFooter": False,
+                        "printBackground": True,
+                        "preferCSSPageSize": True,
+                    }
+
+                    # Execute command and save PDF content to disk for image conversion
+                    resp = self.browser.command_executor._request(
+                        "POST",
+                        url=self.browser.command_executor._url + resource,
+                        body=json.dumps({"cmd": "Page.printToPDF", "params": print_options}),
+                    )
+                    tmp_pdf.write(b64decode(resp["value"]["data"]))
+                    tmp_pdf.flush()
+
+                    # Render PDF to images
+                    self.pdf_to_images(tmp_pdf.name, max_pages)
 
     def execute(self, request):
         start = time()

@@ -52,8 +52,6 @@ config:
     banned: [] # Banned terms
     macros: [] # Terms that indicate macros
     ransomware: [] # Terms that indicate ransomware
-  html_render_timeout: 30
-
 heuristics:
   - heur_id: 1
     name: OCR Detection found

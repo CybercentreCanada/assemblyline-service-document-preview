@@ -1,14 +1,19 @@
+import json
 import os
 import subprocess
 import tempfile
-from time import time
+from time import time, sleep
 
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import Heuristic, Result, ResultImageSection, ResultTextSection
+
+from base64 import b64decode
+from selenium.webdriver import Chrome, ChromeOptions
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
+from unoserver.client import UnoClient
 
 
 def pdfinfo_from_path(fp: str):
@@ -31,35 +36,47 @@ def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=No
 class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
-        self.html_render_timeout = config.get("html_render_timeout", 30)
+
+        # Set browser to run headless without scrollbars
+        browser_options = ChromeOptions()
+        browser_options.add_argument("--headless")
+        browser_options.add_argument("--no-sandbox")
+        browser_options.add_argument("--hide-scrollbars")
+
+        # Run browser in offline mode only
+        self.browser = Chrome(options=browser_options)
+        self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
+        self.uno_client = UnoClient()
+
+    def _start_unoserver_if_necessary(self):
+        libre_pid_path = "/tmp/libre_pid"
+        if not os.path.exists(libre_pid_path):
+            # Start unoserver that is used for LibreOffice conversions to PDF
+            subprocess.Popen(["unoserver", "-p", libre_pid_path])
+            while not os.path.exists(libre_pid_path):
+                # Continue sleeping until PID file is created
+                sleep(1)
+            # Give server sufficient time to start up after PID file has been created
+            sleep(5)
 
     def start(self):
         self.log.debug("Document preview service started")
+        self._start_unoserver_if_necessary()
 
     def stop(self):
         self.log.debug("Document preview service ended")
 
     def office_conversion(self, file, orientation="portrait", page_range_end=2):
-        subprocess.run(
-            [
-                "unoconv",
-                "-f",
-                "pdf",
-                "-e",
-                f"PageRange=1-{page_range_end}",
-                "-P",
-                f"PaperOrientation={orientation}",
-                "-P",
-                "PaperFormat=A3",
-                "-o",
-                f"{self.working_directory}/",
-                file,
-            ],
-            capture_output=True,
+        self._start_unoserver_if_necessary()
+        self.uno_client.convert(
+            inpath=file,
+            outpath=f"{self.working_directory}/converted.pdf",
+            convert_to="pdf",
+            update_index=False,
+            filter_options=[f"PageRange=1-{page_range_end}", f"PaperOrientation={orientation}", "PaperFormat=A3"],
         )
-        converted_file = [s for s in os.listdir(self.working_directory) if ".pdf" in s]
-        if converted_file:
-            return (True, converted_file[0])
+        if "converted.pdf" in os.listdir(self.working_directory):
+            return (True, "converted.pdf")
         else:
             return (False, None)
 
@@ -104,27 +121,34 @@ class DocumentPreview(ServiceBase):
             )
         # HTML
         elif request.file_type == "code/html":
+            # Create a temporary file containing the '.html' extension so Chrome can render the document properly
             with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
                 tmp_html.write(request.file_contents)
                 tmp_html.flush()
                 with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
-                    try:
-                        subprocess.run(
-                            [
-                                "google-chrome",
-                                "--headless",
-                                "--no-sandbox",
-                                "--hide-scrollbars",
-                                f"--print-to-pdf={tmp_pdf.name}",
-                                tmp_html.name,
-                            ],
-                            capture_output=True,
-                            timeout=self.html_render_timeout,
-                        )
-                        self.pdf_to_images(tmp_pdf.name, max_pages)
-                    except subprocess.TimeoutExpired:
-                        # Unable to render HTML in given time
-                        pass
+                    # Load file into browser
+                    self.browser.get(f"file://{tmp_html.name}")
+
+                    # Prepare command to perform Print to PDF
+                    resource = "/session/%s/chromium/send_command_and_get_result" % self.browser.session_id
+                    print_options = {
+                        "landscape": False,
+                        "displayHeaderFooter": False,
+                        "printBackground": True,
+                        "preferCSSPageSize": True,
+                    }
+
+                    # Execute command and save PDF content to disk for image conversion
+                    resp = self.browser.command_executor._request(
+                        "POST",
+                        url=self.browser.command_executor._url + resource,
+                        body=json.dumps({"cmd": "Page.printToPDF", "params": print_options}),
+                    )
+                    tmp_pdf.write(b64decode(resp["value"]["data"]))
+                    tmp_pdf.flush()
+
+                    # Render PDF to images
+                    self.pdf_to_images(tmp_pdf.name, max_pages)
 
     def execute(self, request):
         start = time()

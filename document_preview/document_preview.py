@@ -87,7 +87,7 @@ class DocumentPreview(ServiceBase):
             capture_output=True,
         )
         if os.path.exists(output_path):
-            return os.path.exists(output_path)
+            return output_path
 
     def html_render(self, file_contents, max_pages):
         # Create a temporary file containing the '.html' extension so Chrome can render the document properly

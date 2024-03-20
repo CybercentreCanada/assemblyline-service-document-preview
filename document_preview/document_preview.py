@@ -52,7 +52,23 @@ class DocumentPreview(ServiceBase):
     def stop(self):
         self.log.debug("Document preview service ended")
 
+    def ebook_conversion(self, request: Request):
+        ext = request.file_type.replace("document/", "")
+        with tempfile.NamedTemporaryFile(suffix=f".{ext}") as tmp:
+            tmp.write(request.file_contents)
+            tmp.flush()
+
+            output_path = os.path.join(self.working_directory, "converted.pdf")
+            subprocess.run(
+                ["ebook-convert", tmp.name, output_path],
+                capture_output=True,
+            )
+
+            if os.path.exists(output_path):
+                return output_path
+
     def office_conversion(self, file, orientation="portrait", page_range_end=2):
+        output_path = os.path.join(self.working_directory, "converted.pdf")
         subprocess.run(
             [
                 "unoconv",
@@ -65,16 +81,43 @@ class DocumentPreview(ServiceBase):
                 "-P",
                 "PaperFormat=A3",
                 "-o",
-                f"{self.working_directory}/",
+                output_path,
                 file,
             ],
             capture_output=True,
         )
-        converted_file = [s for s in os.listdir(self.working_directory) if ".pdf" in s]
-        if converted_file:
-            return (True, converted_file[0])
-        else:
-            return (False, None)
+        if os.path.exists(output_path):
+            return os.path.exists(output_path)
+
+    def html_render(self, file_contents, max_pages):
+        # Create a temporary file containing the '.html' extension so Chrome can render the document properly
+        with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
+            tmp_html.write(file_contents)
+            tmp_html.flush()
+            with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
+                # Load file into browser
+                self.browser.get(f"file://{tmp_html.name}")
+
+                # Prepare command to perform Print to PDF
+                resource = "/session/%s/chromium/send_command_and_get_result" % self.browser.session_id
+                print_options = {
+                    "landscape": False,
+                    "displayHeaderFooter": False,
+                    "printBackground": True,
+                    "preferCSSPageSize": True,
+                }
+
+                # Execute command and save PDF content to disk for image conversion
+                resp = self.browser.command_executor._request(
+                    "POST",
+                    url=self.browser.command_executor._url + resource,
+                    body=json.dumps({"cmd": "Page.printToPDF", "params": print_options}),
+                )
+                tmp_pdf.write(b64decode(resp["value"]["data"]))
+                tmp_pdf.flush()
+
+                # Render PDF to images
+                self.pdf_to_images(tmp_pdf.name, max_pages)
 
     def pdf_to_images(self, file, max_pages=None):
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)
@@ -88,12 +131,16 @@ class DocumentPreview(ServiceBase):
             orientation = (
                 "landscape" if any(request.file_type.endswith(type) for type in ["excel", "powerpoint"]) else "portrait"
             )
-            converted = self.office_conversion(request.file_path, orientation, max_pages)
-            if converted[0]:
-                self.pdf_to_images(self.working_directory + "/" + converted[1])
+            pdf_path = self.office_conversion(request.file_path, orientation, max_pages)
+            if pdf_path:
+                self.pdf_to_images(pdf_path, max_pages)
         # PDF
         elif request.file_type == "document/pdf":
             self.pdf_to_images(request.file_path, max_pages)
+        elif request.file_type in ["document/epub", "document/mobi"]:
+            pdf_path = self.ebook_conversion(request)
+            if pdf_path:
+                self.pdf_to_images(pdf_path, max_pages)
         # EML/MSG
         elif request.file_type.endswith("email"):
             file_contents = request.file_contents
@@ -106,6 +153,10 @@ class DocumentPreview(ServiceBase):
                     )
                     tmp.seek(0)
                     file_contents = tmp.read()
+            elif request.file_type == "document/email" and request.file_contents.startswith(b"<html"):
+                # We're dealing with an HTML-formatted email
+                self.html_render(request.file_contents, max_pages)
+                return
             # Render EML as PNG
             # If we have internet access, we'll attempt to load external images
             eml2image(
@@ -117,34 +168,7 @@ class DocumentPreview(ServiceBase):
             )
         # HTML
         elif request.file_type == "code/html":
-            # Create a temporary file containing the '.html' extension so Chrome can render the document properly
-            with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
-                tmp_html.write(request.file_contents)
-                tmp_html.flush()
-                with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
-                    # Load file into browser
-                    self.browser.get(f"file://{tmp_html.name}")
-
-                    # Prepare command to perform Print to PDF
-                    resource = "/session/%s/chromium/send_command_and_get_result" % self.browser.session_id
-                    print_options = {
-                        "landscape": False,
-                        "displayHeaderFooter": False,
-                        "printBackground": True,
-                        "preferCSSPageSize": True,
-                    }
-
-                    # Execute command and save PDF content to disk for image conversion
-                    resp = self.browser.command_executor._request(
-                        "POST",
-                        url=self.browser.command_executor._url + resource,
-                        body=json.dumps({"cmd": "Page.printToPDF", "params": print_options}),
-                    )
-                    tmp_pdf.write(b64decode(resp["value"]["data"]))
-                    tmp_pdf.flush()
-
-                    # Render PDF to images
-                    self.pdf_to_images(tmp_pdf.name, max_pages)
+            self.html_render(request.file_contents, max_pages)
 
     def execute(self, request):
         start = time()

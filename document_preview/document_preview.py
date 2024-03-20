@@ -89,6 +89,36 @@ class DocumentPreview(ServiceBase):
         if os.path.exists(output_path):
             return os.path.exists(output_path)
 
+    def html_render(self, file_contents, max_pages):
+        # Create a temporary file containing the '.html' extension so Chrome can render the document properly
+        with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
+            tmp_html.write(file_contents)
+            tmp_html.flush()
+            with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
+                # Load file into browser
+                self.browser.get(f"file://{tmp_html.name}")
+
+                # Prepare command to perform Print to PDF
+                resource = "/session/%s/chromium/send_command_and_get_result" % self.browser.session_id
+                print_options = {
+                    "landscape": False,
+                    "displayHeaderFooter": False,
+                    "printBackground": True,
+                    "preferCSSPageSize": True,
+                }
+
+                # Execute command and save PDF content to disk for image conversion
+                resp = self.browser.command_executor._request(
+                    "POST",
+                    url=self.browser.command_executor._url + resource,
+                    body=json.dumps({"cmd": "Page.printToPDF", "params": print_options}),
+                )
+                tmp_pdf.write(b64decode(resp["value"]["data"]))
+                tmp_pdf.flush()
+
+                # Render PDF to images
+                self.pdf_to_images(tmp_pdf.name, max_pages)
+
     def pdf_to_images(self, file, max_pages=None):
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)
 
@@ -123,6 +153,10 @@ class DocumentPreview(ServiceBase):
                     )
                     tmp.seek(0)
                     file_contents = tmp.read()
+            elif request.file_type == "document/email" and request.file_contents.startswith(b"<html"):
+                # We're dealing with an HTML-formatted email
+                self.html_render(request.file_contents, max_pages)
+                return
             # Render EML as PNG
             # If we have internet access, we'll attempt to load external images
             eml2image(
@@ -134,34 +168,7 @@ class DocumentPreview(ServiceBase):
             )
         # HTML
         elif request.file_type == "code/html":
-            # Create a temporary file containing the '.html' extension so Chrome can render the document properly
-            with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
-                tmp_html.write(request.file_contents)
-                tmp_html.flush()
-                with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
-                    # Load file into browser
-                    self.browser.get(f"file://{tmp_html.name}")
-
-                    # Prepare command to perform Print to PDF
-                    resource = "/session/%s/chromium/send_command_and_get_result" % self.browser.session_id
-                    print_options = {
-                        "landscape": False,
-                        "displayHeaderFooter": False,
-                        "printBackground": True,
-                        "preferCSSPageSize": True,
-                    }
-
-                    # Execute command and save PDF content to disk for image conversion
-                    resp = self.browser.command_executor._request(
-                        "POST",
-                        url=self.browser.command_executor._url + resource,
-                        body=json.dumps({"cmd": "Page.printToPDF", "params": print_options}),
-                    )
-                    tmp_pdf.write(b64decode(resp["value"]["data"]))
-                    tmp_pdf.flush()
-
-                    # Render PDF to images
-                    self.pdf_to_images(tmp_pdf.name, max_pages)
+            self.html_render(request.file_contents, max_pages)
 
     def execute(self, request):
         start = time()

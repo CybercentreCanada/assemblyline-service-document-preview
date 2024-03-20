@@ -9,7 +9,7 @@ from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import Heuristic, Result, ResultImageSection, ResultTextSection
 
 from base64 import b64decode
-from selenium.webdriver import Chrome, ChromeOptions
+from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -44,7 +44,7 @@ class DocumentPreview(ServiceBase):
         browser_options.add_argument("--hide-scrollbars")
 
         # Run browser in offline mode only
-        self.browser = Chrome(options=browser_options)
+        self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))
         self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
         self.uno_client = UnoClient()
 

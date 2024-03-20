@@ -2,7 +2,7 @@ import json
 import os
 import subprocess
 import tempfile
-from time import time, sleep
+from time import time
 
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
@@ -13,7 +13,6 @@ from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
-from unoserver.client import UnoClient
 
 
 def pdfinfo_from_path(fp: str):
@@ -46,37 +45,34 @@ class DocumentPreview(ServiceBase):
         # Run browser in offline mode only
         self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))
         self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
-        self.uno_client = UnoClient()
-
-    def _start_unoserver_if_necessary(self):
-        libre_pid_path = "/tmp/libre_pid"
-        if not os.path.exists(libre_pid_path):
-            # Start unoserver that is used for LibreOffice conversions to PDF
-            subprocess.Popen(["unoserver", "-p", libre_pid_path])
-            while not os.path.exists(libre_pid_path):
-                # Continue sleeping until PID file is created
-                sleep(1)
-            # Give server sufficient time to start up after PID file has been created
-            sleep(5)
 
     def start(self):
         self.log.debug("Document preview service started")
-        self._start_unoserver_if_necessary()
 
     def stop(self):
         self.log.debug("Document preview service ended")
 
     def office_conversion(self, file, orientation="portrait", page_range_end=2):
-        self._start_unoserver_if_necessary()
-        self.uno_client.convert(
-            inpath=file,
-            outpath=f"{self.working_directory}/converted.pdf",
-            convert_to="pdf",
-            update_index=False,
-            filter_options=[f"PageRange=1-{page_range_end}", f"PaperOrientation={orientation}", "PaperFormat=A3"],
+        subprocess.run(
+            [
+                "unoconv",
+                "-f",
+                "pdf",
+                "-e",
+                f"PageRange=1-{page_range_end}",
+                "-P",
+                f"PaperOrientation={orientation}",
+                "-P",
+                "PaperFormat=A3",
+                "-o",
+                f"{self.working_directory}/",
+                file,
+            ],
+            capture_output=True,
         )
-        if "converted.pdf" in os.listdir(self.working_directory):
-            return (True, "converted.pdf")
+        converted_file = [s for s in os.listdir(self.working_directory) if ".pdf" in s]
+        if converted_file:
+            return (True, converted_file[0])
         else:
             return (False, None)
 

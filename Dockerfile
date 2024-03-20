@@ -5,12 +5,12 @@ ENV SERVICE_PATH document_preview.document_preview.DocumentPreview
 
 USER root
 
-RUN apt-get update && apt-get install -y wget gnupg libreoffice unzip
+RUN apt-get update && apt-get install -y wget libreoffice unzip
 
 RUN mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
 RUN apt-get install -y tesseract-ocr libemail-outlook-message-perl libgdiplus unzip
 RUN apt-get install -y poppler-utils wkhtmltopdf
-RUN pip install Pillow==9.5.0 natsort imgkit compoundfiles compressed_rtf pytesseract selenium unoserver webdriver-manager
+RUN pip install Pillow==9.5.0 natsort imgkit compoundfiles compressed_rtf pytesseract selenium unoconv
 
 WORKDIR /tmp
 

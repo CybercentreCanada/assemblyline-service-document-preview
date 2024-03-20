@@ -5,7 +5,7 @@ ENV SERVICE_PATH document_preview.document_preview.DocumentPreview
 
 USER root
 
-RUN apt-get update && apt-get install -y wget libreoffice unzip
+RUN apt-get update && apt-get install -y wget libreoffice unzip && apt-get install --no-install-recommends -y calibre
 
 RUN mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
 RUN apt-get install -y tesseract-ocr libemail-outlook-message-perl libgdiplus unzip

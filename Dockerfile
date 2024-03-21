@@ -14,14 +14,18 @@ RUN pip install Pillow==9.5.0 natsort imgkit compoundfiles compressed_rtf pytess
 
 WORKDIR /tmp
 
-# Install Chrome for headless rendering of HTML documents
-RUN wget https://dl.google.com/linux/direct/google-chrome-stable_current_amd64.deb && \
-    apt install -o DPkg::Options::="--force-confnew" -y ./google-chrome-stable_current_amd64.deb
-
-# Download necessary chromedriver
-RUN wget https://storage.googleapis.com/chrome-for-testing-public/122.0.6261.128/linux64/chromedriver-linux64.zip && unzip chromedriver-linux64.zip && mv ./chromedriver-linux64/chromedriver /usr/bin/chromedriver
-
-RUN rm -rf /tmp/*
+# Find out what is the latest version of the chrome-for-testing/chromedriver available
+RUN VERS=$(wget -q -O - https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE) && \
+    # Download + Install google-chrome with the version matching the latest chromedriver
+    wget -O ./google-chrome-stable_amd64.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_$VERS-1_amd64.deb && \
+    apt install -y ./google-chrome-stable_amd64.deb && \
+    # Download + unzip the latest chromedriver
+    wget -O ./chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/$VERS/linux64/chromedriver-linux64.zip && \
+    unzip ./chromedriver-linux64.zip chromedriver-linux64/chromedriver && \
+    rm -f ./google-chrome-stable_current_amd64.deb ./chromedriver-linux64.zip && \
+    mv ./chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
+    # Cleanup
+    rm -rf /tmp/*
 
 # Switch to assemblyline user
 USER assemblyline

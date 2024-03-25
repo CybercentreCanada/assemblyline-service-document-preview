@@ -36,11 +36,12 @@ class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
 
-        # Set browser to run headless without scrollbars
         browser_options = ChromeOptions()
-        browser_options.add_argument("--headless")
-        browser_options.add_argument("--no-sandbox")
-        browser_options.add_argument("--hide-scrollbars")
+
+        # Set brower options depending on service configuration
+        browser_cfg = config.get('browser_options', {})
+        [browser_options.add_argument(arg) for arg in browser_cfg.get('arguments', [])]
+        [browser_options.set_capability(cap_n, cap_v) for cap_n, cap_v in browser_cfg.get('capabilities', {}).items()]
 
         # Run browser in offline mode only
         self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))

@@ -52,6 +52,14 @@ config:
     banned: [] # Banned terms
     macros: [] # Terms that indicate macros
     ransomware: [] # Terms that indicate ransomware
+  browser_options:
+    capabilities:
+      pageLoadStrategy: normal
+    # Set browser to run headless without scrollbars
+    arguments:
+      - "--headless"
+      - "--no-sandbox"
+      - "--hide-scrollbars"
 heuristics:
   - heur_id: 1
     name: OCR Detection found

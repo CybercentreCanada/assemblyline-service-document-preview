@@ -1,4 +1,3 @@
-import json
 import os
 import subprocess
 import tempfile
@@ -8,7 +7,7 @@ from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import Heuristic, Result, ResultImageSection, ResultTextSection
 
-from base64 import b64decode
+from base64 import b64decode, b64encode
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from natsort import natsorted
 
@@ -91,24 +90,20 @@ class DocumentPreview(ServiceBase):
             return output_path
 
     def html_render(self, file_contents, max_pages):
-        # Create a temporary file containing the '.html' extension so Chrome can render the document properly
-        with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
-            tmp_html.write(file_contents)
-            tmp_html.flush()
-            with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
-                # Load file into browser
-                self.browser.get(f"file://{tmp_html.name}")
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
+            # Load base64'd contents directly into browser as HTML
+            self.browser.get(f"data:text/html;base64,{b64encode(file_contents).decode()}")
 
-                # Execute command and save PDF content to disk for image conversion
-                tmp_pdf.write(b64decode(self.browser.print_page()))
-                tmp_pdf.flush()
+            # Execute command and save PDF content to disk for image conversion
+            tmp_pdf.write(b64decode(self.browser.print_page()))
+            tmp_pdf.flush()
 
-                # Page browser back to the beginning (in theory we shouldn't have to go far but just in case)
-                while self.browser.current_url != "data:,":
-                    self.browser.back()
+            # Page browser back to the beginning (in theory we shouldn't have to go far but just in case)
+            while self.browser.current_url != "data:,":
+                self.browser.back()
 
-                # Render PDF to images
-                self.pdf_to_images(tmp_pdf.name, max_pages)
+            # Render PDF to images
+            self.pdf_to_images(tmp_pdf.name, max_pages)
 
     def pdf_to_images(self, file, max_pages=None):
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)

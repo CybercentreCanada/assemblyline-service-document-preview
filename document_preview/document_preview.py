@@ -39,9 +39,9 @@ class DocumentPreview(ServiceBase):
         browser_options = ChromeOptions()
 
         # Set brower options depending on service configuration
-        browser_cfg = config.get('browser_options', {})
-        [browser_options.add_argument(arg) for arg in browser_cfg.get('arguments', [])]
-        [browser_options.set_capability(cap_n, cap_v) for cap_n, cap_v in browser_cfg.get('capabilities', {}).items()]
+        browser_cfg = config.get("browser_options", {})
+        [browser_options.add_argument(arg) for arg in browser_cfg.get("arguments", [])]
+        [browser_options.set_capability(cap_n, cap_v) for cap_n, cap_v in browser_cfg.get("capabilities", {}).items()]
 
         # Run browser in offline mode only
         self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))
@@ -99,23 +99,13 @@ class DocumentPreview(ServiceBase):
                 # Load file into browser
                 self.browser.get(f"file://{tmp_html.name}")
 
-                # Prepare command to perform Print to PDF
-                resource = "/session/%s/chromium/send_command_and_get_result" % self.browser.session_id
-                print_options = {
-                    "landscape": False,
-                    "displayHeaderFooter": False,
-                    "printBackground": True,
-                    "preferCSSPageSize": True,
-                }
-
                 # Execute command and save PDF content to disk for image conversion
-                resp = self.browser.command_executor._request(
-                    "POST",
-                    url=self.browser.command_executor._url + resource,
-                    body=json.dumps({"cmd": "Page.printToPDF", "params": print_options}),
-                )
-                tmp_pdf.write(b64decode(resp["value"]["data"]))
+                tmp_pdf.write(b64decode(self.browser.print_page()))
                 tmp_pdf.flush()
+
+                # Page browser back to the beginning (in theory we shouldn't have to go far but just in case)
+                while self.browser.current_url != "data:,":
+                    self.browser.back()
 
                 # Render PDF to images
                 self.pdf_to_images(tmp_pdf.name, max_pages)

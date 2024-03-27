@@ -1,4 +1,3 @@
-import json
 import os
 import subprocess
 import tempfile
@@ -8,8 +7,6 @@ from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import Heuristic, Result, ResultImageSection, ResultTextSection
 
-from base64 import b64decode
-from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -35,17 +32,6 @@ def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=No
 class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
-
-        browser_options = ChromeOptions()
-
-        # Set brower options depending on service configuration
-        browser_cfg = config.get('browser_options', {})
-        [browser_options.add_argument(arg) for arg in browser_cfg.get('arguments', [])]
-        [browser_options.set_capability(cap_n, cap_v) for cap_n, cap_v in browser_cfg.get('capabilities', {}).items()]
-
-        # Run browser in offline mode only
-        self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))
-        self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
 
     def start(self):
         self.log.debug("Document preview service started")
@@ -90,35 +76,10 @@ class DocumentPreview(ServiceBase):
         if os.path.exists(output_path):
             return output_path
 
-    def html_render(self, file_contents, max_pages):
-        # Create a temporary file containing the '.html' extension so Chrome can render the document properly
-        with tempfile.NamedTemporaryFile(suffix=".html") as tmp_html:
-            tmp_html.write(file_contents)
-            tmp_html.flush()
-            with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
-                # Load file into browser
-                self.browser.get(f"file://{tmp_html.name}")
-
-                # Prepare command to perform Print to PDF
-                resource = "/session/%s/chromium/send_command_and_get_result" % self.browser.session_id
-                print_options = {
-                    "landscape": False,
-                    "displayHeaderFooter": False,
-                    "printBackground": True,
-                    "preferCSSPageSize": True,
-                }
-
-                # Execute command and save PDF content to disk for image conversion
-                resp = self.browser.command_executor._request(
-                    "POST",
-                    url=self.browser.command_executor._url + resource,
-                    body=json.dumps({"cmd": "Page.printToPDF", "params": print_options}),
-                )
-                tmp_pdf.write(b64decode(resp["value"]["data"]))
-                tmp_pdf.flush()
-
-                # Render PDF to images
-                self.pdf_to_images(tmp_pdf.name, max_pages)
+    def html_render(self, file_path, max_pages):
+        with tempfile.NamedTemporaryFile(suffix=".pdf") as tmp_pdf:
+            subprocess.run(["wkhtmltopdf", "--no-outline", file_path, tmp_pdf.name], capture_output=True)
+            self.pdf_to_images(tmp_pdf.name, max_pages)
 
     def pdf_to_images(self, file, max_pages=None):
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)
@@ -156,7 +117,7 @@ class DocumentPreview(ServiceBase):
                     file_contents = tmp.read()
             elif request.file_type == "document/email" and request.file_contents.startswith(b"<html"):
                 # We're dealing with an HTML-formatted email
-                self.html_render(request.file_contents, max_pages)
+                self.html_render(request.file_path, max_pages)
                 return
             # Render EML as PNG
             # If we have internet access, we'll attempt to load external images
@@ -169,7 +130,7 @@ class DocumentPreview(ServiceBase):
             )
         # HTML
         elif request.file_type == "code/html":
-            self.html_render(request.file_contents, max_pages)
+            self.html_render(request.file_path, max_pages)
 
     def execute(self, request):
         start = time()

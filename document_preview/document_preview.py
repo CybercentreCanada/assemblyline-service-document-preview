@@ -16,6 +16,7 @@ from assemblyline_v4_service.common.ocr import detections as indicator_detection
 from assemblyline_v4_service.common.utils import extract_passwords
 
 from base64 import b64decode, b64encode
+from io import StringIO
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from natsort import natsorted
 
@@ -250,7 +251,7 @@ class DocumentPreview(ServiceBase):
                     # Trigger OCR on the first N pages as specified in the submission
                     # Otherwise, just add the image without performing OCR analysis
                     ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
-                    ocr_io = tempfile.NamedTemporaryFile("w", delete=False)
+                    ocr_io = StringIO()
                     img_name = f"page_{str(i).zfill(3)}.jpeg"
                     image_section.add_image(
                         f"{self.working_directory}/{preview}",

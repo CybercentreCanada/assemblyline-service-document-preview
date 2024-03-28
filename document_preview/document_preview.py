@@ -179,6 +179,9 @@ class DocumentPreview(ServiceBase):
         save_ocr_output = request.get_param("save_ocr_output").lower()
         try:
             pdf_path = self.render_documents(request, max_pages)
+            if pdf_path:
+                # Convert PDF to images for ImageSection
+                self.pdf_to_images(pdf_path, max_pages)
         except Exception as e:
             # Unable to complete analysis after unexpected error, give up
             self.log.error(e)
@@ -200,133 +203,88 @@ class DocumentPreview(ServiceBase):
                     description=f"Here's the preview for page {i}",
                 )
         else:
-            # Check to see if we were dealing with an EML file that produced a render
-            if request.file_type == "document/email" and os.path.exists(
-                os.path.join(self.working_directory, "output.png")
-            ):
-                # EML file converted to image, therefore we need to use Tesseract for OCR hits
-                img_path = os.path.join(self.working_directory, "output.png")
-                img_name = "eml_render.png"
-                image_section.add_image(
-                    img_path,
-                    name=img_name,
-                    description="Here's the preview for email",
-                    ocr_heuristic_id=1,
-                )
-
-                if request.get_param("analyze_render"):
-                    request.add_extracted(
-                        img_path,
+            # If we have a PDF at our disposal,
+            # try to extract the text from that rather than relying on OCR for everything
+            extracted_text_path = self.extract_pdf_text(pdf_path, max_pages) if pdf_path else None
+            extracted_text = ""
+            if extracted_text_path is not None:
+                extracted_text = open(extracted_text_path, "r").read()
+                # Add all images to section
+                for i, preview in enumerate(natsorted(previews)):
+                    img_name = f"page_{str(i).zfill(3)}.jpeg"
+                    fp = os.path.join(self.working_directory, preview)
+                    image_section.add_image(
+                        fp,
                         name=img_name,
-                        description="Here's the preview for email",
+                        description=f"Here's the preview for page {i}",
                     )
-            else:
-                # Otherwise all other filetypes were converted to a PDF and we can try to extract the text from that
-                extracted_text_path = self.extract_pdf_text(pdf_path, max_pages)
 
-                # Convert PDF to images for ImageSection
-                self.pdf_to_images(pdf_path, max_pages)
-
-                if extracted_text_path is not None:
-                    extracted_text = open(extracted_text_path, "r").read()
-                    # Add all images to section
-                    for i, preview in enumerate(natsorted(previews)):
-                        img_name = f"page_{str(i).zfill(3)}.jpeg"
-                        fp = os.path.join(self.working_directory, preview)
-                        image_section.add_image(
+                    if request.get_param("analyze_render"):
+                        request.add_extracted(
                             fp,
                             name=img_name,
                             description=f"Here's the preview for page {i}",
                         )
 
-                        if request.get_param("analyze_render"):
-                            request.add_extracted(
-                                fp,
-                                name=img_name,
-                                description=f"Here's the preview for page {i}",
-                            )
+                # We were able to extract content, perform term detection
+                detections = indicator_detections(extracted_text)
 
-                    # We were able to extract content, perform term detection
-                    detections = indicator_detections(extracted_text)
+                if detections:
+                    # If we were able to detect potential passwords, add it to the submission's password list
+                    if detections.get("password"):
+                        pw_list = set(self.temp_submission_data.get("passwords", []))
+                        [pw_list.update(extract_passwords(pw_string)) for pw_string in detections["password"]]
+                        self.temp_submission_data["passwords"] = sorted(pw_list)
 
-                    if detections:
-                        # If we were able to detect potential passwords, add it to the submission's password list
-                        if detections.get("password"):
-                            pw_list = set(self.temp_submission_data.get("passwords", []))
-                            [pw_list.update(extract_passwords(pw_string)) for pw_string in detections["password"]]
-                            self.temp_submission_data["passwords"] = sorted(pw_list)
+                    heuristic = Heuristic(1, signatures={f"{k}_strings": len(v) for k, v in detections.items()})
+                    ocr_section = ResultKeyValueSection(
+                        f"Suspicious strings found during OCR analysis on file {request.file_name}"
+                    )
+                    ocr_section.set_heuristic(heuristic)
+                    for k, v in detections.items():
+                        ocr_section.set_item(k, v)
+                    image_section.add_subsection(ocr_section)
+            else:
+                # Unable to extract text from PDF, run it through Tesseract for term detection
+                for i, preview in enumerate(natsorted(previews)):
+                    # Trigger OCR on the first N pages as specified in the submission
+                    # Otherwise, just add the image without performing OCR analysis
+                    ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
+                    ocr_io = tempfile.NamedTemporaryFile("w", delete=False)
+                    img_name = f"page_{str(i).zfill(3)}.jpeg"
+                    image_section.add_image(
+                        f"{self.working_directory}/{preview}",
+                        name=img_name,
+                        description=f"Here's the preview for page {i}",
+                        ocr_heuristic_id=ocr_heur_id,
+                        ocr_io=ocr_io,
+                    )
 
-                        heuristic = Heuristic(1, signatures={f"{k}_strings": len(v) for k, v in detections.items()})
-                        ocr_section = ResultKeyValueSection(
-                            f"Suspicious strings found during OCR analysis on file {request.file_name}"
-                        )
-                        ocr_section.set_heuristic(heuristic)
-                        for k, v in detections.items():
-                            ocr_section.set_item(k, v)
-                        image_section.add_subsection(ocr_section)
-
-                    # Write OCR output as specified by submissions params
-                    if save_ocr_output == "no":
-                        pass
-                    else:
-                        # Write content to disk to be uploaded
-                        if save_ocr_output == "as_extracted":
-                            request.add_extracted(
-                                extracted_text_path,
-                                "extracted_text",
-                                description="Extracted text from PDF",
-                            )
-                        elif save_ocr_output == "as_supplementary":
-                            request.add_supplementary(
-                                extracted_text_path,
-                                "extracted_text",
-                                description="Extracted text from PDF",
-                            )
-                        else:
-                            self.log.warning(f"Unknown save method for OCR given: {save_ocr_output}")
-
-                else:
-                    # Unable to extract text from PDF, run it through Tesseract for term detection
-                    for i, preview in enumerate(natsorted(previews)):
-                        # Trigger OCR on the first N pages as specified in the submission
-                        # Otherwise, just add the image without performing OCR analysis
-                        ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
-                        ocr_io = tempfile.NamedTemporaryFile("w", delete=False)
-                        img_name = f"page_{str(i).zfill(3)}.jpeg"
-                        image_section.add_image(
+                    if request.get_param("analyze_render"):
+                        request.add_extracted(
                             f"{self.working_directory}/{preview}",
                             name=img_name,
                             description=f"Here's the preview for page {i}",
-                            ocr_heuristic_id=ocr_heur_id,
-                            ocr_io=ocr_io,
                         )
 
-                        if request.get_param("analyze_render"):
-                            request.add_extracted(
-                                f"{self.working_directory}/{preview}",
-                                name=img_name,
-                                description=f"Here's the preview for page {i}",
-                            )
+                    extracted_text += f"{ocr_io.read()}\n\n"
 
-                        # Write OCR output as specified by submissions params
-                        if save_ocr_output == "no":
-                            continue
-                        else:
-                            # Write content to disk to be uploaded
-                            if save_ocr_output == "as_extracted":
-                                request.add_extracted(
-                                    ocr_io.name,
-                                    f"{img_name}_ocr_output",
-                                    description="OCR Output",
-                                )
-                            elif save_ocr_output == "as_supplementary":
-                                request.add_supplementary(
-                                    ocr_io.name,
-                                    f"{img_name}_ocr_output",
-                                    description="OCR Output",
-                                )
-                            else:
-                                self.log.warning(f"Unknown save method for OCR given: {save_ocr_output}")
+            # Write OCR output as specified by submissions params
+            if save_ocr_output == "no":
+                pass
+            else:
+                with tempfile.NamedTemporaryFile("w", delete=False) as extracted_text_fh:
+                    extracted_text_fh.write(extracted_text)
+                    extracted_text_fh.flush()
+
+                    # Write content to disk to be uploaded
+                    add_params = dict(path=extracted_text_fh.name, name="ocr_output_dump", description="OCR Output")
+                    if save_ocr_output == "as_extracted":
+                        request.add_extracted(**add_params)
+                    elif save_ocr_output == "as_supplementary":
+                        request.add_supplementary(**add_params)
+                    else:
+                        self.log.warning(f"Unknown save method for OCR given: {save_ocr_output}")
 
             # Check to see if we're dealing with a suspicious PDF
             if request.file_type == "document/pdf":

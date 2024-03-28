@@ -303,7 +303,7 @@ class DocumentPreview(ServiceBase):
                 except Exception:
                     # There was a problem fetching the page count from the PDF, move on..
                     pass
-            image_section.promote_as_screenshot()
-            result.add_section(image_section)
+        image_section.promote_as_screenshot()
+        result.add_section(image_section)
         request.result = result
         self.log.debug(f"Runtime: {time() - start}s")

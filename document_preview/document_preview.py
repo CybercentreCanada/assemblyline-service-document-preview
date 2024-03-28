@@ -25,7 +25,7 @@ def pdfinfo_from_path(fp: str):
 
 
 def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None):
-    pdf_conv_command = ["pdftoppm", "-jpeg", "-f", str(first_page)]
+    pdf_conv_command = ["pdftoppm", "-r", "75", "-jpeg", "-f", str(first_page)]
     if last_page:
         pdf_conv_command += ["-l", str(last_page)]
     subprocess.run(pdf_conv_command + [fp, os.path.join(output_directory, "output")], capture_output=True)

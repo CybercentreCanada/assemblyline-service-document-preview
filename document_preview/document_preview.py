@@ -65,7 +65,7 @@ class DocumentPreview(ServiceBase):
     def extract_pdf_text(self, path: str, max_pages: int) -> str:
         output_path = os.path.join(self.working_directory, "extracted_text")
         subprocess.run(
-            ["pdftotext", "-f", "1", "-l", max_pages, path, output_path],
+            ["pdftotext", "-f", "1", "-l", str(max_pages), path, output_path],
             capture_output=True,
         )
 

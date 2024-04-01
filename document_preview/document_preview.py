@@ -289,10 +289,8 @@ class DocumentPreview(ServiceBase):
 
             # Check to see if we're dealing with a suspicious PDF
             if request.file_type == "document/pdf":
-                with open(ocr_io.name, "r") as fp:
-                    ocr_content = fp.read()
                 try:
-                    if pdfinfo_from_path(request.file_path)["Pages"] == 1 and "click" in ocr_content.lower():
+                    if pdfinfo_from_path(request.file_path)["Pages"] == 1 and "click" in extracted_text.lower():
                         # Suspected document is part of a phishing campaign
                         ResultTextSection(
                             "Suspected Phishing",

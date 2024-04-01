@@ -233,9 +233,9 @@ class DocumentPreview(ServiceBase):
                 if detections:
                     # If we were able to detect potential passwords, add it to the submission's password list
                     if detections.get("password"):
-                        pw_list = set(self.temp_submission_data.get("passwords", []))
+                        pw_list = set(request.temp_submission_data.get("passwords", []))
                         [pw_list.update(extract_passwords(pw_string)) for pw_string in detections["password"]]
-                        self.temp_submission_data["passwords"] = sorted(pw_list)
+                        request.temp_submission_data["passwords"] = sorted(pw_list)
 
                     heuristic = Heuristic(1, signatures={f"{k}_strings": len(v) for k, v in detections.items()})
                     ocr_section = ResultKeyValueSection(

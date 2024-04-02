@@ -146,6 +146,8 @@ class DocumentPreview(ServiceBase):
         # EML/MSG
         elif request.file_type.endswith("email"):
             file_contents = request.file_contents
+            # Peek at the first 15 bytes of the content
+            file_contents_peek = file_contents[:15].lower()
             # Convert MSG to EML where applicable
             if request.file_type == "document/office/email":
                 with tempfile.NamedTemporaryFile() as tmp:
@@ -155,7 +157,9 @@ class DocumentPreview(ServiceBase):
                     )
                     tmp.seek(0)
                     file_contents = tmp.read()
-            elif request.file_type == "document/email" and request.file_contents.startswith(b"<html"):
+            elif request.file_type == "document/email" and (
+                file_contents_peek.startswith(b"<html") or file_contents_peek == b"<!doctype html>"
+            ):
                 # We're dealing with an HTML-formatted email
                 return self.html_render(request.file_contents)
             # Render EML as PNG

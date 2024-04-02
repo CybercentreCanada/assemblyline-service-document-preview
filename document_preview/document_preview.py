@@ -16,6 +16,7 @@ from assemblyline_v4_service.common.ocr import detections as indicator_detection
 from assemblyline_v4_service.common.utils import extract_passwords
 
 from base64 import b64decode, b64encode
+from bs4 import BeautifulSoup
 from io import StringIO
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from natsort import natsorted
@@ -111,9 +112,18 @@ class DocumentPreview(ServiceBase):
             return output_path
 
     def html_render(self, file_contents) -> str:
+        document = BeautifulSoup(file_contents)
+
+        if b"msonormal" in file_contents.lower():
+            # We're dealing with a document that was created/intended to be read by Microsoft Office
+            # Since we can't perfect load this into Chrome because of styling, let's strip it
+            style = document.find("style")
+            if style:
+                style.decompose()
+
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_pdf:
             # Load base64'd contents directly into browser as HTML
-            self.browser.get(f"data:text/html;base64,{b64encode(file_contents).decode()}")
+            self.browser.get(f"data:text/html;base64,{b64encode(str(document).encode()).decode()}")
 
             # Execute command and save PDF content to disk for image conversion
             tmp_pdf.write(b64decode(self.browser.print_page()))

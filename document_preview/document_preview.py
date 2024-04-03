@@ -16,9 +16,9 @@ from assemblyline_v4_service.common.ocr import detections as indicator_detection
 from assemblyline_v4_service.common.utils import extract_passwords
 
 from base64 import b64decode, b64encode
-from bs4 import BeautifulSoup
 from io import StringIO
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
+from selenium.webdriver.common.print_page_options import PrintOptions
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -111,22 +111,15 @@ class DocumentPreview(ServiceBase):
         if os.path.exists(output_path):
             return output_path
 
-    def html_render(self, file_contents) -> str:
-        document = BeautifulSoup(file_contents)
-
-        if b"msonormal" in file_contents.lower():
-            # We're dealing with a document that was created/intended to be read by Microsoft Office
-            # Since we can't perfect load this into Chrome because of styling, let's strip it
-            style = document.find("style")
-            if style:
-                style.decompose()
-
+    def html_render(self, file_contents, max_pages=1) -> str:
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_pdf:
             # Load base64'd contents directly into browser as HTML
-            self.browser.get(f"data:text/html;base64,{b64encode(str(document).encode()).decode()}")
+            self.browser.get(f"data:text/html;base64,{b64encode(file_contents).decode()}")
 
             # Execute command and save PDF content to disk for image conversion
-            tmp_pdf.write(b64decode(self.browser.print_page()))
+            print_opt = PrintOptions()
+            print_opt.page_ranges = [1, max_pages]
+            tmp_pdf.write(b64decode(self.browser.print_page(print_opt)))
             tmp_pdf.flush()
 
             # Page browser back to the beginning (in theory we shouldn't have to go far but just in case)
@@ -171,7 +164,7 @@ class DocumentPreview(ServiceBase):
                 file_contents_peek.startswith(b"<html") or file_contents_peek == b"<!doctype html>"
             ):
                 # We're dealing with an HTML-formatted email
-                return self.html_render(request.file_contents)
+                return self.html_render(request.file_contents, max_pages)
             # Render EML as PNG
             # If we have internet access, we'll attempt to load external images
             eml2image(
@@ -183,7 +176,7 @@ class DocumentPreview(ServiceBase):
             )
         # HTML
         elif request.file_type == "code/html":
-            return self.html_render(request.file_contents)
+            return self.html_render(request.file_contents, max_pages)
 
     def execute(self, request):
         start = time()

@@ -60,6 +60,7 @@ config:
       - "--headless"
       - "--no-sandbox"
       - "--hide-scrollbars"
+      - "--disable-dev-shm-usage"
 heuristics:
   - heur_id: 1
     name: OCR Detection found

@@ -19,6 +19,7 @@ from base64 import b64decode, b64encode
 from io import StringIO
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
+from selenium.common.exceptions import NoAlertPresentException
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -119,6 +120,16 @@ class DocumentPreview(ServiceBase):
             # Execute command and save PDF content to disk for image conversion
             print_opt = PrintOptions()
             print_opt.page_ranges = [1, max_pages]
+
+            # Check to see if there's an alert raised on page load
+            try:
+                # If there is an alert, dismiss it before continuing render
+                alert = self.browser.switch_to.alert
+                alert.dismiss()
+            except NoAlertPresentException:
+                # No alert raised, continue with render
+                pass
+
             tmp_pdf.write(b64decode(self.browser.print_page(print_opt)))
             tmp_pdf.flush()
 

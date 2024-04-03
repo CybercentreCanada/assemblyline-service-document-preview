@@ -128,9 +128,10 @@ class DocumentPreview(ServiceBase):
 
             # Check to see if there's an alert raised on page load
             try:
-                # If there is an alert, dismiss it before continuing render
-                alert = self.browser.switch_to.alert
-                alert.dismiss()
+                # If there is any alert, dismiss it before continuing render
+                while True:
+                    alert = self.browser.switch_to.alert
+                    alert.dismiss()
             except NoAlertPresentException:
                 # No alert raised, continue with render
                 pass

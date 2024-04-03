@@ -114,6 +114,10 @@ class DocumentPreview(ServiceBase):
             return output_path
 
     def html_render(self, file_contents, max_pages=1) -> str:
+        if b"window.location.href = " in file_contents:
+            # Document contains code that will cause a redirect, something we likely can't follow
+            return
+
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_pdf:
             # Load base64'd contents directly into browser as HTML
             self.browser.get(f"data:text/html;base64,{b64encode(file_contents).decode()}")
@@ -124,9 +128,10 @@ class DocumentPreview(ServiceBase):
 
             # Check to see if there's an alert raised on page load
             try:
-                # If there is an alert, dismiss it before continuing render
-                alert = self.browser.switch_to.alert
-                alert.dismiss()
+                # If there is any alert, dismiss it before continuing render
+                while True:
+                    alert = self.browser.switch_to.alert
+                    alert.dismiss()
             except NoAlertPresentException:
                 # No alert raised, continue with render
                 pass

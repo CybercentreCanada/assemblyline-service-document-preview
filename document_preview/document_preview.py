@@ -19,7 +19,7 @@ from base64 import b64decode, b64encode
 from io import StringIO
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
-from selenium.common.exceptions import NoAlertPresentException
+from selenium.common.exceptions import NoAlertPresentException, WebDriverException
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -58,6 +58,7 @@ class DocumentPreview(ServiceBase):
         # Run browser in offline mode only
         self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))
         self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
+        self.browser.set_window_size(1080, 1920)
 
     def start(self):
         self.log.debug("Document preview service started")
@@ -130,14 +131,18 @@ class DocumentPreview(ServiceBase):
                 # No alert raised, continue with render
                 pass
 
-            tmp_pdf.write(b64decode(self.browser.print_page(print_opt)))
-            tmp_pdf.flush()
-
-            # Page browser back to the beginning (in theory we shouldn't have to go far but just in case)
-            while self.browser.current_url != "data:,":
-                self.browser.back()
-
-            return tmp_pdf.name
+            try:
+                tmp_pdf.write(b64decode(self.browser.print_page(print_opt)))
+                tmp_pdf.flush()
+                return tmp_pdf.name
+            except WebDriverException:
+                # We aren't able to print the page to PDF, take a screenshot instead
+                self.browser.save_screenshot(os.path.join(self.working_directory, "output_screenshot.png"))
+                return
+            finally:
+                # Page browser back to the beginning (in theory we shouldn't have to go far but just in case)
+                while self.browser.current_url != "data:,":
+                    self.browser.back()
 
     def pdf_to_images(self, file, max_pages=None):
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)

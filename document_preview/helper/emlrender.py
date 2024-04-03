@@ -169,6 +169,9 @@ def processEml(data, output_dir, logger, load_ext_images=False, load_images=Fals
                 logger.info("Decoded %s" % payload_path)
                 imagesList.append(payload_path)
             except Exception as e:
+                if "network error" in str(e):
+                    # Since the container doesn't have internet access, we expect to get network errors
+                    break
                 logger.warning(f"Decoding this MIME part returned error: {e}")
 
         elif mimeType in imageTypes and load_images:
@@ -181,6 +184,9 @@ def processEml(data, output_dir, logger, load_ext_images=False, load_images=Fals
                 logger.info("Decoded %s" % payload_path)
                 imagesList.append(payload_path)
             except Exception as e:
+                if "network error" in str(e):
+                    # Since the container doesn't have internet access, we expect to get network errors
+                    break
                 logger.warning(f"Decoding this MIME part returned error: {e}")
 
     resultImage = os.path.join(output_dir, "output.png")

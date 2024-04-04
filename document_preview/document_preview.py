@@ -119,7 +119,8 @@ class DocumentPreview(ServiceBase):
             return
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_pdf:
-            # Load base64'd contents directly into browser as HTML
+            # Load base64'd HTML contents directly into new window of browser
+            self.browser.switch_to.new_window()
             self.browser.get(f"data:text/html;base64,{b64encode(file_contents).decode()}")
 
             # Execute command and save PDF content to disk for image conversion
@@ -145,9 +146,17 @@ class DocumentPreview(ServiceBase):
                 self.browser.save_screenshot(os.path.join(self.working_directory, "output_screenshot.png"))
                 return
             finally:
-                # Page browser back to the beginning (in theory we shouldn't have to go far but just in case)
-                while self.browser.current_url != "data:,":
-                    self.browser.back()
+                # Reset browser for next run by closing all windows (except for the first one which we created)
+
+                # Check to see if the current window handle was deleted
+                if self.browser.current_window_handle not in self.browser.window_handles:
+                    # Set current window to the last that was created
+                    self.browser.switch_to.window(self.browser.window_handles[-1])
+
+                while len(self.browser.window_handles) > 1:
+                    # In the event we load JS that spawns a bunch of windows, let's clean them up
+                    self.browser.close()
+                    self.browser.switch_to.window(self.browser.window_handles[-1])
 
     def pdf_to_images(self, file, max_pages=None):
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)

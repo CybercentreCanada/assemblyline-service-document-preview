@@ -151,12 +151,12 @@ class DocumentPreview(ServiceBase):
                 # Check to see if the current window handle was deleted
                 if self.browser.current_window_handle not in self.browser.window_handles:
                     # Set current window to the last that was created
-                    self.browser.switch_to(self.browser.window_handles[-1])
+                    self.browser.switch_to.window(self.browser.window_handles[-1])
 
-                while len(self.browser.window_handles) != 1:
+                while len(self.browser.window_handles) > 1:
                     # In the event we load JS that spawns a bunch of windows, let's clean them up
                     self.browser.close()
-                    self.browser.switch_to(self.browser.window_handles[-1])
+                    self.browser.switch_to.window(self.browser.window_handles[-1])
 
     def pdf_to_images(self, file, max_pages=None):
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)

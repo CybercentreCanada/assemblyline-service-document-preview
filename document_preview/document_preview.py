@@ -2,6 +2,7 @@ import os
 import subprocess
 import tempfile
 from time import time
+from typing import List
 
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.request import ServiceRequest as Request
@@ -12,7 +13,7 @@ from assemblyline_v4_service.common.result import (
     ResultTextSection,
     ResultKeyValueSection,
 )
-from assemblyline_v4_service.common.ocr import detections as indicator_detections
+from assemblyline_v4_service.common.ocr import detections as indicator_detections, ocr_detections
 from assemblyline_v4_service.common.utils import extract_passwords
 
 from base64 import b64decode, b64encode
@@ -56,7 +57,9 @@ class DocumentPreview(ServiceBase):
         [browser_options.set_capability(cap_n, cap_v) for cap_n, cap_v in browser_cfg.get("capabilities", {}).items()]
 
         # Run browser in offline mode only
-        self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))
+        self.browser = Chrome(
+            options=browser_options
+        )  # , service=ChromeService(executable_path="/usr/bin/chromedriver"))
         self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
         self.browser.set_window_size(1080, 1920)
 
@@ -75,6 +78,19 @@ class DocumentPreview(ServiceBase):
 
         if os.path.exists(output_path):
             return output_path
+
+    def extract_pdf_images(self, path: str, max_pages: int) -> List[str]:
+        output_path_prefix = os.path.join(self.working_directory, "extracted_image")
+        subprocess.run(
+            ["pdfimages", "-f", "1", "-l", str(max_pages), "-j", path, output_path_prefix],
+            capture_output=True,
+        )
+
+        return [
+            os.path.join(self.working_directory, f)
+            for f in os.listdir(self.working_directory)
+            if f.startswith("extracted_image")
+        ]
 
     def ebook_conversion(self, request: Request):
         ext = request.file_type.replace("document/", "")
@@ -266,6 +282,14 @@ class DocumentPreview(ServiceBase):
 
                 # We were able to extract content, perform term detection
                 detections = indicator_detections(extracted_text)
+
+                # Try to extract any images from the page range and run them through OCR
+                for image_path in self.extract_pdf_images(pdf_path, max_pages):
+                    d = ocr_detections(image_path)
+
+                    # Merge indicator detections
+                    for k in set(list(d.keys()) + list(detections.keys())):
+                        detections[k] = list(set(detections.get(k, []) + d.get(k, [])))
 
                 if detections:
                     # If we were able to detect potential passwords, add it to the submission's password list

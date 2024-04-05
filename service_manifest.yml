@@ -20,8 +20,8 @@ submission_params:
   # Default is selected for phishing campaigns that tend to be singular-paged documents
   - name: max_pages_rendered
     type: int
-    value: 1
-    default: 1
+    value: 5
+    default: 5
 
   # Run OCR on the first N pages
   - name: run_ocr_on_first_n_pages

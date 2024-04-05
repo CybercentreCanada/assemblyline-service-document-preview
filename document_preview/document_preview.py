@@ -57,9 +57,7 @@ class DocumentPreview(ServiceBase):
         [browser_options.set_capability(cap_n, cap_v) for cap_n, cap_v in browser_cfg.get("capabilities", {}).items()]
 
         # Run browser in offline mode only
-        self.browser = Chrome(
-            options=browser_options
-        )  # , service=ChromeService(executable_path="/usr/bin/chromedriver"))
+        self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))
         self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
         self.browser.set_window_size(1080, 1920)
 

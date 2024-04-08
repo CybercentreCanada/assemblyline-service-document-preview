@@ -9,6 +9,7 @@ from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import (
     Heuristic,
     Result,
+    ResultSection,
     ResultImageSection,
     ResultTextSection,
     ResultKeyValueSection,
@@ -18,6 +19,7 @@ from assemblyline_v4_service.common.utils import extract_passwords
 
 from base64 import b64decode, b64encode
 from io import StringIO
+from multidecoder.decoders.network import find_emails, find_urls
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 from selenium.common.exceptions import NoAlertPresentException, WebDriverException
@@ -222,6 +224,10 @@ class DocumentPreview(ServiceBase):
         elif request.file_type == "code/html":
             return self.html_render(request.file_contents, max_pages)
 
+    def tag_network_iocs(self, section: ResultSection, ocr_content: str) -> None:
+        [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]
+        [section.add_tag("network.static.uri", node.value) for node in find_urls(ocr_content.encode())]
+
     def execute(self, request):
         start = time()
         result = Result()
@@ -328,6 +334,9 @@ class DocumentPreview(ServiceBase):
                         )
 
                     extracted_text += f"{ocr_io.read()}\n\n"
+
+            # Tag any network IOCs found in OCR output
+            self.tag_network_iocs(image_section, extracted_text)
 
             # Write OCR output as specified by submissions params
             if save_ocr_output == "no":

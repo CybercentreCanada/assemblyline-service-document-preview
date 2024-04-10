@@ -10,7 +10,7 @@ RUN apt-get update && apt-get install -y wget libreoffice unzip && apt-get insta
 RUN mkdir -p /usr/share/man/man1mkdir -p /usr/share/man/man1
 RUN apt-get install -y tesseract-ocr libemail-outlook-message-perl libgdiplus unzip
 RUN apt-get install -y poppler-utils wkhtmltopdf
-RUN pip install Pillow==9.5.0 natsort imgkit compoundfiles compressed_rtf pytesseract selenium unoconv
+RUN pip install Pillow==9.5.0 natsort imgkit compoundfiles compressed_rtf pytesseract selenium unoconv multidecoder
 
 WORKDIR /tmp
 

@@ -41,7 +41,7 @@ def pdfinfo_from_path(fp: str):
 
 
 def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None):
-    pdf_conv_command = ["pdftoppm", "-r", PDFTOPPM_DPI, "-jpeg", "-f", str(first_page)]
+    pdf_conv_command = ["pdftoppm", "-r", PDFTOPPM_DPI, "-png", "-f", str(first_page)]
     if last_page:
         pdf_conv_command += ["-l", str(last_page)]
     subprocess.run(pdf_conv_command + [fp, os.path.join(output_directory, "output")], capture_output=True)
@@ -59,7 +59,10 @@ class DocumentPreview(ServiceBase):
         [browser_options.set_capability(cap_n, cap_v) for cap_n, cap_v in browser_cfg.get("capabilities", {}).items()]
 
         # Run browser in offline mode only
-        self.browser = Chrome(options=browser_options, service=ChromeService(executable_path="/usr/bin/chromedriver"))
+        service = None
+        if os.path.exists("/usr/bin/chromedriver"):
+            service = ChromeService(executable_path="/usr/bin/chromedriver")
+        self.browser = Chrome(options=browser_options, service=service)
         self.browser.set_network_conditions(offline=True, latency=5, throughput=500 * 1024)
         self.browser.set_window_size(1080, 1920)
 
@@ -82,7 +85,7 @@ class DocumentPreview(ServiceBase):
     def extract_pdf_images(self, path: str, max_pages: int) -> List[str]:
         output_path_prefix = os.path.join(self.working_directory, "extracted_image")
         subprocess.run(
-            ["pdfimages", "-f", "1", "-l", str(max_pages), "-j", path, output_path_prefix],
+            ["pdfimages", "-f", "1", "-l", str(max_pages), "-png", path, output_path_prefix],
             capture_output=True,
         )
 
@@ -199,7 +202,7 @@ class DocumentPreview(ServiceBase):
             file_contents_peek = file_contents[:15].lower()
             # Convert MSG to EML where applicable
             if request.file_type == "document/office/email":
-                with tempfile.NamedTemporaryFile() as tmp:
+                with tempfile.NamedTemporaryFile(suffix=".eml") as tmp:
                     subprocess.run(
                         ["msgconvert", "-outfile", tmp.name, request.file_path],
                         capture_output=True,
@@ -253,7 +256,7 @@ class DocumentPreview(ServiceBase):
         if not run_ocr_on_first_n_pages:
             # Add all images to section (no need to run OCR)
             for i, preview in enumerate(natsorted(previews)):
-                img_name = f"page_{str(i).zfill(3)}.jpeg"
+                img_name = f"page_{str(i).zfill(3)}.png"
                 fp = os.path.join(self.working_directory, preview)
                 image_section.add_image(
                     fp,
@@ -269,7 +272,7 @@ class DocumentPreview(ServiceBase):
                 extracted_text = open(extracted_text_path, "r").read()
                 # Add all images to section
                 for i, preview in enumerate(natsorted(previews)):
-                    img_name = f"page_{str(i).zfill(3)}.jpeg"
+                    img_name = f"page_{str(i).zfill(3)}.png"
                     fp = os.path.join(self.working_directory, preview)
                     image_section.add_image(
                         fp,
@@ -317,7 +320,7 @@ class DocumentPreview(ServiceBase):
                     # Otherwise, just add the image without performing OCR analysis
                     ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
                     ocr_io = StringIO()
-                    img_name = f"page_{str(i).zfill(3)}.jpeg"
+                    img_name = f"page_{str(i).zfill(3)}.png"
                     image_section.add_image(
                         f"{self.working_directory}/{preview}",
                         name=img_name,
@@ -342,7 +345,7 @@ class DocumentPreview(ServiceBase):
             if save_ocr_output == "no":
                 pass
             else:
-                with tempfile.NamedTemporaryFile("w", delete=False) as extracted_text_fh:
+                with tempfile.NamedTemporaryFile("w", delete=False, suffix=".txt") as extracted_text_fh:
                     extracted_text_fh.write(extracted_text)
                     extracted_text_fh.flush()
 

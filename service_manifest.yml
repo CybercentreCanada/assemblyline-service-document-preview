@@ -63,7 +63,7 @@ config:
       - "--disable-dev-shm-usage"
 heuristics:
   - heur_id: 1
-    name: OCR Detection found
+    name: OCR Detection Found
     description: Suspicious verbage found in OCR inspection.
     score: 0
     signature_score_map:

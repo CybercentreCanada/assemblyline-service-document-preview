@@ -1,47 +1,78 @@
-# Document preview service
-This repository is a self-developed Assemblyline service based on a [FAME's module](https://github.com/certsocietegenerale/fame_modules/tree/master/processing/document_preview).
-It was created by [x1mus](https://github.com/x1mus) with support from [Sorakurai](https://github.com/Sorakurai) and [reynas](https://github.com/reynas) at [NVISO](https://github.com/NVISOsecurity).
+[![Discord](https://img.shields.io/badge/chat-on%20discord-7289da.svg?sanitize=true)](https://discord.gg/GUAy9wErNu)
+[![](https://img.shields.io/discord/908084610158714900)](https://discord.gg/GUAy9wErNu)
+[![Static Badge](https://img.shields.io/badge/github-assemblyline-blue?logo=github)](https://github.com/CybercentreCanada/assemblyline)
+[![Static Badge](https://img.shields.io/badge/github-assemblyline\_service\_document\_preview-blue?logo=github)](https://github.com/CybercentreCanada/assemblyline-service-document-preview)
+[![GitHub Issues or Pull Requests by label](https://img.shields.io/github/issues/CybercentreCanada/assemblyline/service-document-preview)](https://github.com/CybercentreCanada/assemblyline/issues?q=is:issue+is:open+label:service-document-preview)
+[![License](https://img.shields.io/github/license/CybercentreCanada/assemblyline-service-document-preview)](./LICENSE)
+# DocumentPreview Service
 
-This also contains modified source code from the following repositories:
-- [XME's emlrender](https://github.com/xme/emlrender)
-- [JoshData's convert-outlook-msg-file](https://github.com/JoshData/convert-outlook-msg-file)
+This Assemblyline service renders documents for preview and performs OCR analysis for malicious content.
 
-## OCR Configuration
-In this service, you're allowed to override the default OCR terms from the [service base](https://github.com/CybercentreCanada/assemblyline-v4-service/blob/master/assemblyline_v4_service/common/ocr.py) using `ocr` key in the `config` block of the service manifest.
+## Image variants and tags
 
-### Simple Term Override (Legacy)
-Let's say, I want to use a custom set of terms for `ransomware` detection. Then I can set the following:
+Assemblyline services are built from the [Assemblyline service base image](https://hub.docker.com/r/cccs/assemblyline-v4-service-base),
+which is based on Debian 11 with Python 3.11.
 
-```yaml
-config:
-    ocr:
-        ransomware: ['bad1', 'bad2', ...]
-```
+Assemblyline services use the following tag definitions:
 
-This will cause the service to **only** use the terms I've specified when looking for `ransomware` terms. This is still subject to the hit threshold defined in the service base.
+| **Tag Type** | **Description**                                                                                  |      **Example Tag**       |
+| :----------: | :----------------------------------------------------------------------------------------------- | :------------------------: |
+|    latest    | The most recent build (can be unstable).                                                         |          `latest`          |
+|  build_type  | The type of build used. `dev` is the latest unstable build. `stable` is the latest stable build. |     `stable` or `dev`      |
+|    series    | Complete build details, including version and build type: `version.buildType`.                   | `4.5.stable`, `4.5.1.dev3` |
 
-### Advanced Term Override
-Let's say, I want to use a custom set of terms for `ransomware` detection and I want to set the hit threshold to `1` instead of `2` (default). Then I can set the following:
+## Running this service
 
-```yaml
-config:
-    ocr:
-        ransomware:
-            terms: ['bad1', 'bad2', ...]
-            threshold: 1
-```
+This is an Assemblyline service. It is designed to run as part of the Assemblyline framework.
 
-This will cause the service to **only** use the terms I've specified when looking for `ransomware` terms and is subject to the hit threshold I've defined.
+If you would like to test this service locally, you can run the Docker image directly from the a shell:
 
-### Term Inclusion/Exclusion
-Let's say, I want to add/remove a set of terms from the default set for `ransomware` detection. Then I can set the following:
+    docker run \
+        --name DocumentPreview \
+        --env SERVICE_API_HOST=http://`ip addr show docker0 | grep "inet " | awk '{print $2}' | cut -f1 -d"/"`:5003 \
+        --network=host \
+        cccs/assemblyline-service-document-preview
 
-```yaml
-config:
-    ocr:
-        ransomware:
-            include: ['bad1', 'bad2', ...]
-            exclude: ['bank account']
-```
+To add this service to your Assemblyline deployment, follow this
+[guide](https://cybercentrecanada.github.io/assemblyline4_docs/developer_manual/services/run_your_service/#add-the-container-to-your-deployment).
 
-This will cause the service to add the terms listed in `include` and remove the terms in `exclude` when looking for `ransomware` terms in OCR detection with the default set.
+## Documentation
+
+General Assemblyline documentation can be found at: https://cybercentrecanada.github.io/assemblyline4_docs/
+
+# Service DocumentPreview
+
+Ce service de la ligne d'assemblage permet de prévisualiser les documents et d'effectuer une analyse OCR pour détecter les contenus malveillants.
+
+## Variantes et étiquettes d'image
+
+Les services d'Assemblyline sont construits à partir de l'image de base [Assemblyline service](https://hub.docker.com/r/cccs/assemblyline-v4-service-base),
+qui est basée sur Debian 11 avec Python 3.11.
+
+Les services d'Assemblyline utilisent les définitions d'étiquettes suivantes:
+
+| **Type d'étiquette** | **Description**                                                                                                |  **Exemple d'étiquette**   |
+| :------------------: | :------------------------------------------------------------------------------------------------------------- | :------------------------: |
+|   dernière version   | La version la plus récente (peut être instable).                                                               |          `latest`          |
+|      build_type      | Type de construction utilisé. `dev` est la dernière version instable. `stable` est la dernière version stable. |     `stable` ou `dev`      |
+|        série         | Détails de construction complets, comprenant la version et le type de build: `version.buildType`.              | `4.5.stable`, `4.5.1.dev3` |
+
+## Exécution de ce service
+
+Il s'agit d'un service d'Assemblyline. Il est optimisé pour fonctionner dans le cadre d'un déploiement d'Assemblyline.
+
+Si vous souhaitez tester ce service localement, vous pouvez exécuter l'image Docker directement à partir d'un terminal:
+
+    docker run \
+        --name DocumentPreview \
+        --env SERVICE_API_HOST=http://`ip addr show docker0 | grep "inet " | awk '{print $2}' | cut -f1 -d"/"`:5003 \
+        --network=host \
+        cccs/assemblyline-service-document-preview
+
+Pour ajouter ce service à votre déploiement d'Assemblyline, suivez ceci
+[guide](https://cybercentrecanada.github.io/assemblyline4_docs/fr/developer_manual/services/run_your_service/#add-the-container-to-your-deployment).
+
+## Documentation
+
+La documentation générale sur Assemblyline peut être consultée à l'adresse suivante: https://cybercentrecanada.github.io/assemblyline4_docs/
+

@@ -8,6 +8,19 @@
 
 This Assemblyline service renders documents for preview and performs OCR analysis for malicious content.
 
+## Service Details
+
+### OCR
+This uses OCR for it's analysis, you can find information about OCR configurations [here](https://cybercentrecanada.github.io/assemblyline4_docs/administration/service_management/#ocr-configuration).
+
+## Accreditation / Contributions
+This Assemblyline service is based on [FAME's module](https://github.com/certsocietegenerale/fame_modules/tree/master/processing/document_preview).
+It was originally created by [x1mus](https://github.com/x1mus) with support from [Sorakurai](https://github.com/Sorakurai) and [reynas](https://github.com/reynas) at [NVISO](https://github.com/NVISOsecurity).
+
+This also contains modified source code from the following repositories:
+- [XME's emlrender](https://github.com/xme/emlrender)
+- [JoshData's convert-outlook-msg-file](https://github.com/JoshData/convert-outlook-msg-file)
+
 ## Image variants and tags
 
 Assemblyline services are built from the [Assemblyline service base image](https://hub.docker.com/r/cccs/assemblyline-v4-service-base),
@@ -44,6 +57,19 @@ General Assemblyline documentation can be found at: https://cybercentrecanada.gi
 
 Ce service de la ligne d'assemblage permet de prévisualiser les documents et d'effectuer une analyse OCR pour détecter les contenus malveillants.
 
+## Détails du service
+
+### OCR
+Ce service utilise l'OCR pour son analyse, vous pouvez trouver des informations sur les configurations de l'OCR [ici] (https://cybercentrecanada.github.io/assemblyline4_docs/administration/service_management/#ocr-configuration).
+
+## Accréditation / Contributions
+Ce service Assemblyline est basé sur le module [FAME] (https://github.com/certsocietegenerale/fame_modules/tree/master/processing/document_preview).
+Il a été créé à l'origine par [x1mus](https://github.com/x1mus) avec le soutien de [Sorakurai](https://github.com/Sorakurai) et [reynas](https://github.com/reynas) à [NVISO](https://github.com/NVISOsecurity).
+
+Il contient également du code source modifié provenant des dépôts suivants :
+- [emlrender de XME](https://github.com/xme/emlrender)
+- [convert-outlook-msg-file de JoshData](https://github.com/JoshData/convert-outlook-msg-file)
+
 ## Variantes et étiquettes d'image
 
 Les services d'Assemblyline sont construits à partir de l'image de base [Assemblyline service](https://hub.docker.com/r/cccs/assemblyline-v4-service-base),
@@ -75,4 +101,3 @@ Pour ajouter ce service à votre déploiement d'Assemblyline, suivez ceci
 ## Documentation
 
 La documentation générale sur Assemblyline peut être consultée à l'adresse suivante: https://cybercentrecanada.github.io/assemblyline4_docs/
-

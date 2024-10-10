@@ -1,0 +1,9 @@
+calibre
+libemail-outlook-message-perl
+libgdiplus
+libreoffice
+poppler-utils
+tesseract-ocr
+unzip
+wget
+wkhtmltopdf

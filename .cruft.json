@@ -1,0 +1,23 @@
+{
+  "template": "https://github.com/CybercentreCanada/assemblyline-service-template.git",
+  "commit": "0d668bd5b9ce331045b2bbda50316af4939dae00",
+  "checkout": "badge/issues",
+  "context": {
+    "cookiecutter": {
+      "service_name": "document-preview",
+      "__svc_name": "document-preview",
+      "__repository": "assemblyline-service-document-preview",
+      "__pkg_name": "document_preview",
+      "__class_name": "DocumentPreview",
+      "short_description": "This Assemblyline service renders documents for preview and performs OCR analysis for malicious content.",
+      "short_description_fr": "Ce service de la ligne d'assemblage permet de prévisualiser les documents et d'effectuer une analyse OCR pour détecter les contenus malveillants.",
+      "stage": "CORE",
+      "category": "Static Analysis",
+      "org_name_full": "CybercentreCanada",
+      "org_name_short": "cccs",
+      "license": "mit",
+      "_template": "https://github.com/CybercentreCanada/assemblyline-service-template.git"
+    }
+  },
+  "directory": null
+}

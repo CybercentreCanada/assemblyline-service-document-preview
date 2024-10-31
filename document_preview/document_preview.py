@@ -1,4 +1,5 @@
 import os
+import pandas
 import subprocess
 import tempfile
 from time import time
@@ -23,6 +24,7 @@ from multidecoder.decoders.network import find_emails, find_urls
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 from selenium.common.exceptions import NoAlertPresentException, WebDriverException
+
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -190,6 +192,32 @@ class DocumentPreview(ServiceBase):
                 "landscape" if any(request.file_type.endswith(type) for type in ["excel", "powerpoint"]) else "portrait"
             )
             return self.office_conversion(request.file_path, orientation, max_pages)
+        # CSV
+        elif request.file_type == "text/csv":
+            with tempfile.NamedTemporaryFile(dir=self.working_directory) as tmp:
+                with pandas.ExcelWriter(tmp) as writer:
+                    # Convert CSV to Excel spreadsheet, then render
+                    df = pandas.read_csv(request.file_path)
+                    df.to_excel(writer, index=False)
+                    worksheet = writer.sheets["Sheet1"]
+
+                    # Expand columns
+                    # Ref: https://stackoverflow.com/questions/17326973/is-there-a-way-to-auto-adjust-excel-column-widths-with-pandas-excelwriter
+                    for idx, col in enumerate(df):  # loop through all columns
+                        series = df[col]
+                        max_len = (
+                            max(
+                                (
+                                    series.astype(str).map(len).max(),  # len of largest item
+                                    len(str(series.name)),  # len of column name/header
+                                )
+                            )
+                            + 1
+                        )  # adding a little extra space
+                        worksheet.set_column(idx, idx, max_len)  # set column width
+
+                return self.office_conversion(tmp.name, "landscape", max_pages)
+
         # PDF
         elif request.file_type == "document/pdf":
             return request.file_path

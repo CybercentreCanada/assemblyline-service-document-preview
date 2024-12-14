@@ -9,3 +9,5 @@ Pillow==9.5.0
 pytesseract
 selenium
 unoconv
+XlsxWriter
+pandas

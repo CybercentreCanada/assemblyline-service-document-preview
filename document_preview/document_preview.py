@@ -1,4 +1,5 @@
 import os
+import pandas
 import subprocess
 import tempfile
 from time import time
@@ -23,6 +24,7 @@ from multidecoder.decoders.network import find_emails, find_urls
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 from selenium.common.exceptions import NoAlertPresentException, WebDriverException
+
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
@@ -190,6 +192,32 @@ class DocumentPreview(ServiceBase):
                 "landscape" if any(request.file_type.endswith(type) for type in ["excel", "powerpoint"]) else "portrait"
             )
             return self.office_conversion(request.file_path, orientation, max_pages)
+        # CSV
+        elif request.file_type == "text/csv":
+            with tempfile.NamedTemporaryFile(dir=self.working_directory) as tmp:
+                with pandas.ExcelWriter(tmp) as writer:
+                    # Convert CSV to Excel spreadsheet, then render
+                    df = pandas.read_csv(request.file_path)
+                    df.to_excel(writer, index=False)
+                    worksheet = writer.sheets["Sheet1"]
+
+                    # Expand columns
+                    # Ref: https://stackoverflow.com/questions/17326973/is-there-a-way-to-auto-adjust-excel-column-widths-with-pandas-excelwriter
+                    for idx, col in enumerate(df):  # loop through all columns
+                        series = df[col]
+                        max_len = (
+                            max(
+                                (
+                                    series.astype(str).map(len).max(),  # len of largest item
+                                    len(str(series.name)),  # len of column name/header
+                                )
+                            )
+                            + 1
+                        )  # adding a little extra space
+                        worksheet.set_column(idx, idx, max_len)  # set column width
+
+                return self.office_conversion(tmp.name, "landscape", max_pages)
+
         # PDF
         elif request.file_type == "document/pdf":
             return request.file_path
@@ -253,16 +281,38 @@ class DocumentPreview(ServiceBase):
         run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")
         previews = [s for s in os.listdir(self.working_directory) if "output" in s]
 
-        if not run_ocr_on_first_n_pages:
-            # Add all images to section (no need to run OCR)
+        def attach_images_to_section(run_ocr=False) -> str:
+            extracted_text = ""
             for i, preview in enumerate(natsorted(previews)):
+                ocr_heur_id, ocr_io = None, None
+                if run_ocr:
+                    # Trigger OCR on the first N pages as specified in the submission
+                    ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
+                    ocr_io = StringIO()
+
                 img_name = f"page_{str(i).zfill(3)}.png"
                 fp = os.path.join(self.working_directory, preview)
                 image_section.add_image(
                     fp,
                     name=img_name,
                     description=f"Here's the preview for page {i}",
+                    ocr_heuristic_id=ocr_heur_id,
+                    ocr_io=ocr_io,
                 )
+
+                if request.get_param("analyze_render"):
+                    request.add_extracted(
+                        fp,
+                        name=img_name,
+                        description=f"Here's the preview for page {i}",
+                    )
+                if run_ocr:
+                    extracted_text += f"{ocr_io.read()}\n\n"
+            return extracted_text
+
+        if not run_ocr_on_first_n_pages:
+            # Add all images to section (no need to run OCR)
+            attach_images_to_section()
         else:
             # If we have a PDF at our disposal,
             # try to extract the text from that rather than relying on OCR for everything
@@ -271,21 +321,7 @@ class DocumentPreview(ServiceBase):
             if extracted_text_path is not None:
                 extracted_text = open(extracted_text_path, "r").read()
                 # Add all images to section
-                for i, preview in enumerate(natsorted(previews)):
-                    img_name = f"page_{str(i).zfill(3)}.png"
-                    fp = os.path.join(self.working_directory, preview)
-                    image_section.add_image(
-                        fp,
-                        name=img_name,
-                        description=f"Here's the preview for page {i}",
-                    )
-
-                    if request.get_param("analyze_render"):
-                        request.add_extracted(
-                            fp,
-                            name=img_name,
-                            description=f"Here's the preview for page {i}",
-                        )
+                attach_images_to_section()
 
                 # We were able to extract content, perform term detection
                 detections = indicator_detections(extracted_text)
@@ -315,28 +351,7 @@ class DocumentPreview(ServiceBase):
                     image_section.add_subsection(ocr_section)
             else:
                 # Unable to extract text from PDF, run it through Tesseract for term detection
-                for i, preview in enumerate(natsorted(previews)):
-                    # Trigger OCR on the first N pages as specified in the submission
-                    # Otherwise, just add the image without performing OCR analysis
-                    ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
-                    ocr_io = StringIO()
-                    img_name = f"page_{str(i).zfill(3)}.png"
-                    image_section.add_image(
-                        f"{self.working_directory}/{preview}",
-                        name=img_name,
-                        description=f"Here's the preview for page {i}",
-                        ocr_heuristic_id=ocr_heur_id,
-                        ocr_io=ocr_io,
-                    )
-
-                    if request.get_param("analyze_render"):
-                        request.add_extracted(
-                            f"{self.working_directory}/{preview}",
-                            name=img_name,
-                            description=f"Here's the preview for page {i}",
-                        )
-
-                    extracted_text += f"{ocr_io.read()}\n\n"
+                extracted_text += attach_images_to_section(run_ocr=True)
 
             # Tag any network IOCs found in OCR output
             self.tag_network_iocs(image_section, extracted_text)

@@ -55,7 +55,8 @@ General Assemblyline documentation can be found at: https://cybercentrecanada.gi
 
 # Service DocumentPreview
 
-Ce service de la ligne d'assemblage permet de prévisualiser les documents et d'effectuer une analyse OCR pour détecter les contenus malveillants.
+Ce service d'Assemblyline rend les documents pour prévisualisation et effectue une analyse OCR pour détecter les contenus malveillants.
+
 
 ## Détails du service
 

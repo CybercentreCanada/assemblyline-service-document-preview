@@ -1,0 +1,13 @@
+assemblyline
+assemblyline-v4-service
+compoundfiles
+compressed_rtf
+imgkit
+multidecoder
+natsort
+pandas
+Pillow==9.5.0
+pytesseract
+selenium
+unoconv
+XlsxWriter

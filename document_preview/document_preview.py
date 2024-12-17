@@ -52,11 +52,10 @@ def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=No
 class DocumentPreview(ServiceBase):
     def __init__(self, config=None):
         super(DocumentPreview, self).__init__(config)
-
         browser_options = ChromeOptions()
 
         # Set brower options depending on service configuration
-        browser_cfg = config.get("browser_options", {})
+        browser_cfg = self.config.get("browser_options", {})
         [browser_options.add_argument(arg) for arg in browser_cfg.get("arguments", [])]
         [browser_options.set_capability(cap_n, cap_v) for cap_n, cap_v in browser_cfg.get("capabilities", {}).items()]
 

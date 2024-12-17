@@ -55,13 +55,13 @@ General Assemblyline documentation can be found at: https://cybercentrecanada.gi
 
 # Service DocumentPreview
 
-Ce service d'Assemblyline rend les documents pour prévisualisation et effectue une analyse OCR pour détecter les contenus malveillants.
+Ce service d'Assemblyline exécute le rendement des documents pour prévisualisation et effectue une analyse OCR pour détecter les contenus malveillants.
 
 
 ## Détails du service
 
 ### OCR
-Ce service utilise l'OCR pour son analyse, vous pouvez trouver des informations sur les configurations de l'OCR [ici] (https://cybercentrecanada.github.io/assemblyline4_docs/administration/service_management/#ocr-configuration).
+Ce service utilise l'OCR pour son analyse. Vous pouvez trouver les détails de configurations de l'OCR [ici] (https://cybercentrecanada.github.io/assemblyline4_docs/administration/service_management/#ocr-configuration).
 
 ## Accréditation / Contributions
 Ce service Assemblyline est basé sur le module [FAME] (https://github.com/certsocietegenerale/fame_modules/tree/master/processing/document_preview).
@@ -86,7 +86,7 @@ Les services d'Assemblyline utilisent les définitions d'étiquettes suivantes:
 
 ## Exécution de ce service
 
-Il s'agit d'un service d'Assemblyline. Il est optimisé pour fonctionner dans le cadre d'un déploiement d'Assemblyline.
+Ce service est spécialement optimisé pour fonctionner dans le cadre d'un déploiement d'Assemblyline.
 
 Si vous souhaitez tester ce service localement, vous pouvez exécuter l'image Docker directement à partir d'un terminal:
 

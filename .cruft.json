@@ -10,7 +10,7 @@
       "__pkg_name": "document_preview",
       "__class_name": "DocumentPreview",
       "short_description": "This Assemblyline service renders documents for preview and performs OCR analysis for malicious content.",
-      "short_description_fr": "Ce service d'Assemblyline rend les documents pour prévisualisation et effectue une analyse OCR pour détecter les contenus malveillants.",
+      "short_description_fr": "Ce service d'Assemblyline exécute le rendement des documents pour prévisualisation et effectue une analyse OCR pour détecter les contenus malveillants.",
       "stage": "CORE",
       "category": "Static Analysis",
       "org_name_full": "CybercentreCanada",

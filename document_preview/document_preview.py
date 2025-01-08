@@ -69,7 +69,6 @@ class DocumentPreview(ServiceBase):
 
     def start(self):
         self.log.debug("Document preview service started")
-        self._start_unoserver_if_necessary()
 
     def stop(self):
         self.log.debug("Document preview service ended")
@@ -122,6 +121,7 @@ class DocumentPreview(ServiceBase):
                 return output_path
 
     def office_conversion(self, file, orientation="portrait", page_range_end=2):
+        self._start_unoserver_if_necessary()
         output_path = os.path.join(self.working_directory, "converted.pdf")
         subprocess.run(
             [

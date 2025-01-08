@@ -69,7 +69,6 @@ class DocumentPreview(ServiceBase):
 
     def start(self):
         self.log.debug("Document preview service started")
-        self._start_unoserver_if_necessary()
 
     def stop(self):
         self.log.debug("Document preview service ended")

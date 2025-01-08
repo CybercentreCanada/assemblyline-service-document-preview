@@ -1,0 +1,132 @@
+{
+  "extra": {
+    "drop_file": false,
+    "score": 0,
+    "sections": [
+      {
+        "auto_collapse": false,
+        "body": [
+          {
+            "img": {
+              "description": "Here's the preview for page 0",
+              "name": "page_000.png",
+              "sha256": "53f34e35b66d766fbb525eb9005f298ebbb0ca2ac2ee258e97cf607255223c02"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 0 (thumbnail)",
+              "name": "page_000.png.thumb",
+              "sha256": "2676abfd85754752cbca9d3c3a904e40c2cd6826163e69e69330a1cfc1099422"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for page 1",
+              "name": "page_001.png",
+              "sha256": "9035ca975cb0903d5adfb743c9bebf129d6c659f6a428cb84de1a1ba680055e9"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 1 (thumbnail)",
+              "name": "page_001.png.thumb",
+              "sha256": "7310871626dd0d54ab791ee227ae50b3249072f404b6d11635ddd5945486afe4"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for page 2",
+              "name": "page_002.png",
+              "sha256": "5fbc2b22fceec3632bcc8eaa1e51ae8768aa56687888e5ef37002bd7d343b504"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 2 (thumbnail)",
+              "name": "page_002.png.thumb",
+              "sha256": "878492a51361b1c08f4df13d473e8caf6b967800594e2741407f69591e3ed69a"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for page 3",
+              "name": "page_003.png",
+              "sha256": "e3e4f456286d9a32a80f16b4fc5de827449d43fb424dbbf3ca2d2ffa473491e2"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 3 (thumbnail)",
+              "name": "page_003.png.thumb",
+              "sha256": "b20fd15f8779508570e1607475aee044dc972465f996f9d7fa1baedf59fb847a"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for page 4",
+              "name": "page_004.png",
+              "sha256": "c717ac0d11ce466764745b41101273ee20d6197d67c3920e295d8c849b89f065"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 4 (thumbnail)",
+              "name": "page_004.png.thumb",
+              "sha256": "cef32bf9e2e92e6ac909b656b07080e5ff971f9983e640aa515ec641c1b72903"
+            }
+          }
+        ],
+        "body_config": {},
+        "body_format": "IMAGE",
+        "classification": "TLP:C",
+        "depth": 0,
+        "heuristic": null,
+        "promote_to": "SCREENSHOT",
+        "tags": {},
+        "title_text": "Preview Image(s)",
+        "zeroize_on_tag_safe": false
+      }
+    ]
+  },
+  "files": {
+    "extracted": [],
+    "supplementary": [
+      {
+        "name": "page_000.png.thumb",
+        "sha256": "2676abfd85754752cbca9d3c3a904e40c2cd6826163e69e69330a1cfc1099422"
+      },
+      {
+        "name": "page_000.png",
+        "sha256": "53f34e35b66d766fbb525eb9005f298ebbb0ca2ac2ee258e97cf607255223c02"
+      },
+      {
+        "name": "page_002.png",
+        "sha256": "5fbc2b22fceec3632bcc8eaa1e51ae8768aa56687888e5ef37002bd7d343b504"
+      },
+      {
+        "name": "page_001.png.thumb",
+        "sha256": "7310871626dd0d54ab791ee227ae50b3249072f404b6d11635ddd5945486afe4"
+      },
+      {
+        "name": "page_002.png.thumb",
+        "sha256": "878492a51361b1c08f4df13d473e8caf6b967800594e2741407f69591e3ed69a"
+      },
+      {
+        "name": "page_001.png",
+        "sha256": "9035ca975cb0903d5adfb743c9bebf129d6c659f6a428cb84de1a1ba680055e9"
+      },
+      {
+        "name": "page_003.png.thumb",
+        "sha256": "b20fd15f8779508570e1607475aee044dc972465f996f9d7fa1baedf59fb847a"
+      },
+      {
+        "name": "page_004.png",
+        "sha256": "c717ac0d11ce466764745b41101273ee20d6197d67c3920e295d8c849b89f065"
+      },
+      {
+        "name": "page_004.png.thumb",
+        "sha256": "cef32bf9e2e92e6ac909b656b07080e5ff971f9983e640aa515ec641c1b72903"
+      },
+      {
+        "name": "page_003.png",
+        "sha256": "e3e4f456286d9a32a80f16b4fc5de827449d43fb424dbbf3ca2d2ffa473491e2"
+      }
+    ]
+  },
+  "results": {
+    "heuristics": [],
+    "tags": {},
+    "temp_submission_data": {}
+  }
+}

@@ -2,7 +2,7 @@ import os
 import pandas
 import subprocess
 import tempfile
-from time import time
+from time import time, sleep
 from typing import List
 
 from assemblyline_v4_service.common.base import ServiceBase
@@ -39,7 +39,7 @@ def pdfinfo_from_path(fp: str):
         # Clean up spacing
         v = v.lstrip()
         pdfinfo[k] = v
-    pdfinfo
+    return pdfinfo
 
 
 def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None):
@@ -69,9 +69,19 @@ class DocumentPreview(ServiceBase):
 
     def start(self):
         self.log.debug("Document preview service started")
+        self._start_unoserver_if_necessary()
 
     def stop(self):
         self.log.debug("Document preview service ended")
+
+    def _start_unoserver_if_necessary(self):
+        libre_pid_path = "/tmp/libre_pid"
+        if not os.path.exists(libre_pid_path):
+            # Start unoserver that is used for LibreOffice conversions to PDF
+            subprocess.Popen(["unoserver", "-p", libre_pid_path, "-s"])
+            while not os.path.exists(libre_pid_path):
+                # Continue sleeping until PID file is created
+                sleep(1)
 
     def extract_pdf_text(self, path: str, max_pages: int) -> str:
         output_path = os.path.join(self.working_directory, "extracted_text")
@@ -115,18 +125,18 @@ class DocumentPreview(ServiceBase):
         output_path = os.path.join(self.working_directory, "converted.pdf")
         subprocess.run(
             [
-                "unoconv",
-                "-f",
+                "unoconvert",
+                "--convert-to",
                 "pdf",
-                "-e",
+                "--filter-option",
                 f"PageRange=1-{page_range_end}",
-                "-P",
+                "--filter-option",
                 f"PaperOrientation={orientation}",
-                "-P",
+                "--filter-option",
                 "PaperFormat=A3",
-                "-o",
-                output_path,
+                "--dont-update-index",
                 file,
+                output_path,
             ],
             capture_output=True,
         )

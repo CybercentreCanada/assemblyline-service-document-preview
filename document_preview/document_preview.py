@@ -69,6 +69,7 @@ class DocumentPreview(ServiceBase):
 
     def start(self):
         self.log.debug("Document preview service started")
+        self._start_unoserver_if_necessary()
 
     def stop(self):
         self.log.debug("Document preview service ended")
@@ -289,6 +290,11 @@ class DocumentPreview(ServiceBase):
         image_section = ResultImageSection(request, "Preview Image(s)")
         run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")
         previews = [s for s in os.listdir(self.working_directory) if "output" in s]
+
+        if not previews:
+            # No previews were generated, move on
+            request.result = result
+            return
 
         def attach_images_to_section(run_ocr=False) -> str:
             extracted_text = ""

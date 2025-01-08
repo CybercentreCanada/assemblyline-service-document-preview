@@ -9,5 +9,5 @@ pandas
 Pillow==9.5.0
 pytesseract
 selenium
-unoserver
+git+https://github.com/cccs-rs/unoserver.git
 XlsxWriter

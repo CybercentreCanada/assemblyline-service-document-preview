@@ -78,7 +78,7 @@ class DocumentPreview(ServiceBase):
         libre_pid_path = "/tmp/libre_pid"
         if not os.path.exists(libre_pid_path):
             # Start unoserver that is used for LibreOffice conversions to PDF
-            subprocess.Popen(["unoserver", "-p", libre_pid_path])
+            subprocess.Popen(["unoserver", "-p", libre_pid_path, "-s"])
             while not os.path.exists(libre_pid_path):
                 # Continue sleeping until PID file is created
                 sleep(1)

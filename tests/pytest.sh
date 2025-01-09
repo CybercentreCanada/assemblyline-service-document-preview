@@ -6,9 +6,9 @@ docker build \
     -f ./Dockerfile \
     .
 
-if [[ -n "$FULL_SAMPLES_LOCATION"]]; then
-    MOUNT_SAMPLES = "-v ${FULL_SAMPLES_LOCATION}:/opt/samples"
-    ENV_SAMPLES = "-e FULL_SAMPLES_LOCATION=/opt/samples"
+if [[ -n "$FULL_SAMPLES_LOCATION" ]]; then
+    MOUNT_SAMPLES="-v ${FULL_SAMPLES_LOCATION}:/opt/samples"
+    ENV_SAMPLES="-e FULL_SAMPLES_LOCATION=/opt/samples"
 fi
 docker run \
     -t \

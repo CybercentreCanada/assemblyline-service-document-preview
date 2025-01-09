@@ -1,0 +1,106 @@
+{
+  "extra": {
+    "drop_file": false,
+    "score": 0,
+    "sections": [
+      {
+        "auto_collapse": false,
+        "body": [
+          {
+            "img": {
+              "description": "Here's the preview for page 0",
+              "name": "page_000.png",
+              "sha256": "bf1a066787ad4478325a9f5926ec557997a3421cdf77d7f3d2a3bdecf6a9cfac"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 0 (thumbnail)",
+              "name": "page_000.png.thumb",
+              "sha256": "8dcc7130d6c78beab9f3b95575addfe10b047456e2785cef6835a04cc415f475"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for page 1",
+              "name": "page_001.png",
+              "sha256": "6568fff3e8004563387d2dc702dcb200bf21c243cb98723a58b2aea83adfd561"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 1 (thumbnail)",
+              "name": "page_001.png.thumb",
+              "sha256": "b87dc10d972b9f8f762e5de5970a2054427203a35409e43305b57e69f8a8eaef"
+            }
+          }
+        ],
+        "body_config": {},
+        "body_format": "IMAGE",
+        "classification": "TLP:C",
+        "depth": 0,
+        "heuristic": null,
+        "promote_to": "SCREENSHOT",
+        "tags": {
+          "network": {
+            "email": {
+              "address": [
+                "ae.us@astrazeneca.com"
+              ]
+            },
+            "static": {
+              "uri": [
+                "http://www.globalprivacy.astrazeneca.com.",
+                "http://www.hhs.gov/ocr/hipaa"
+              ]
+            }
+          }
+        },
+        "title_text": "Preview Image(s)",
+        "zeroize_on_tag_safe": false
+      }
+    ]
+  },
+  "files": {
+    "extracted": [],
+    "supplementary": [
+      {
+        "name": "page_001.png",
+        "sha256": "6568fff3e8004563387d2dc702dcb200bf21c243cb98723a58b2aea83adfd561"
+      },
+      {
+        "name": "page_000.png.thumb",
+        "sha256": "8dcc7130d6c78beab9f3b95575addfe10b047456e2785cef6835a04cc415f475"
+      },
+      {
+        "name": "page_001.png.thumb",
+        "sha256": "b87dc10d972b9f8f762e5de5970a2054427203a35409e43305b57e69f8a8eaef"
+      },
+      {
+        "name": "page_000.png",
+        "sha256": "bf1a066787ad4478325a9f5926ec557997a3421cdf77d7f3d2a3bdecf6a9cfac"
+      }
+    ]
+  },
+  "results": {
+    "heuristics": [],
+    "tags": {
+      "network.email.address": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "ae.us@astrazeneca.com"
+        }
+      ],
+      "network.static.uri": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "http://www.globalprivacy.astrazeneca.com."
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "http://www.hhs.gov/ocr/hipaa"
+        }
+      ]
+    },
+    "temp_submission_data": {}
+  }
+}

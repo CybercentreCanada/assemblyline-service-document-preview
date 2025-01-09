@@ -40,7 +40,7 @@ def pdfinfo_from_path(fp: str):
         # Clean up spacing
         v = v.lstrip()
         pdfinfo[k] = v
-    pdfinfo
+    return pdfinfo
 
 
 def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None):

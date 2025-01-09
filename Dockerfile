@@ -3,6 +3,7 @@ FROM cccs/assemblyline-v4-service-base:$branch
 
 # Python path to the service class from your service directory
 ENV SERVICE_PATH document_preview.document_preview.DocumentPreview
+ENV DOCBUILDER_VERSION 8.2.0
 
 # Install apt dependencies
 USER root
@@ -15,6 +16,14 @@ RUN apt-get update && \
     rm -f /tmp/setup/pkglist.txt
 
 WORKDIR /tmp
+
+# Install OnlyOffice's DocBuilder to convert documents to PDF
+RUN wget -O ./onlyoffice-documentbuilder.deb https://github.com/ONLYOFFICE/DocumentBuilder/releases/download/v${DOCBUILDER_VERSION}/onlyoffice-documentbuilder_amd64.deb && \
+    apt install -y ./onlyoffice-documentbuilder.deb && \
+    rm -f ./onlyoffice-documentbuilder.deb
+
+# Add onlyoffice to PYTHONPATH
+ENV PYTHONPATH $PYTHONPATH:/opt/onlyoffice
 
 # Find out what is the latest version of the chrome-for-testing/chromedriver available
 RUN VERS=$(wget -q -O - https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE) && \
@@ -50,6 +59,10 @@ USER root
 RUN sed -i -e "s/\$SERVICE_TAG/$version/g" service_manifest.yml
 # Add uno package to PYTHONPATH
 ENV PYTHONPATH $PYTHONPATH:/usr/lib/python3/dist-packages/
+
+# From @kam193's OOPreview service - fixes the issue where DocBuilder fails at conversion unless first used by root
+# Ref: https://github.com/kam193/assemblyline-services/blob/main/oo-preview/service/finish_installation.py
+RUN python -c "from documentbuilder.docbuilder import CDocBuilder; builder = CDocBuilder()"
 
 # Switch to assemblyline user
 USER assemblyline

@@ -10,60 +10,60 @@
             "img": {
               "description": "Here's the preview for page 0",
               "name": "page_000.png",
-              "sha256": "217bd8b58a346210fcfae6a92951f1afe5ecb731001cd70d2e840380791ab9f1"
+              "sha256": "df709743eb4d3e2990c546ee41515812806e79b8f8c77638237e2d90de43be88"
             },
             "thumb": {
               "description": "Here's the preview for page 0 (thumbnail)",
               "name": "page_000.png.thumb",
-              "sha256": "e0ceba4920468d7415b04f6be82712ffed487364dd0723a481f5aa900fad4f73"
+              "sha256": "09178a86d3b24ee8a9481389c64a9d111030a7a2a0d6b89f3cca12cc12e7bb55"
             }
           },
           {
             "img": {
               "description": "Here's the preview for page 1",
               "name": "page_001.png",
-              "sha256": "80e77f9ace538377936c3859740288cdb088b78266befd4b14521362dc1db61c"
+              "sha256": "2737cd863922f34fbe8cdf5ca9c868ea87421e6cb1f6ba9b4933798a38e8b6e3"
             },
             "thumb": {
               "description": "Here's the preview for page 1 (thumbnail)",
               "name": "page_001.png.thumb",
-              "sha256": "bae48f22519e544d3693aee07a70fb8efe810b42e594db2b49112d5b236cc4bd"
+              "sha256": "6898e9246c56c646ddf008decaf98d7312227c2662b50b072954dfe3074cbe33"
             }
           },
           {
             "img": {
               "description": "Here's the preview for page 2",
               "name": "page_002.png",
-              "sha256": "226ffc0fb17f6d79978819fa9f34818d5a629893cd0e0000367fbb96e2a1ef05"
+              "sha256": "af440e649f3381a4ee53d95ca3e48091e9bb2e859ba3d3f56309d51dd8fd5e25"
             },
             "thumb": {
               "description": "Here's the preview for page 2 (thumbnail)",
               "name": "page_002.png.thumb",
-              "sha256": "6cfa21f357bb03ea47ff578ea7dd15f9404a2e381006c5916b88be6831c7239f"
+              "sha256": "19aead786cd5ce89cd2a3f2ae0aa4636fc6a9459ca4f10afdeed34e9f6e57211"
             }
           },
           {
             "img": {
               "description": "Here's the preview for page 3",
               "name": "page_003.png",
-              "sha256": "da60eaaf764100ca7aee04e9573a61bb529eb6f85d7420f7b7e523698ea2a474"
+              "sha256": "451c3b34308f0cd89570da08e4187c16b6df4bcb6dc9e8711af94df49252acfa"
             },
             "thumb": {
               "description": "Here's the preview for page 3 (thumbnail)",
               "name": "page_003.png.thumb",
-              "sha256": "d5577256bfe8cf4f20438c6c992e58d88a4749207c52383aa93d119d2cb1f721"
+              "sha256": "a2b6a542eb6f2238e4a67121f76328c72710d1a0ebb9f0f2a6f4e175957953b3"
             }
           },
           {
             "img": {
               "description": "Here's the preview for page 4",
               "name": "page_004.png",
-              "sha256": "472a26a21f5e3366381f6e723c222575a6c529fc2ea5dc2672fc1eae5a0ef472"
+              "sha256": "81403d052c5939779d135b59f6a85e82a32b09796a3cd55bd4a1d796a707a8fc"
             },
             "thumb": {
               "description": "Here's the preview for page 4 (thumbnail)",
               "name": "page_004.png.thumb",
-              "sha256": "f7c7838b385cf286fd8fbd5f28e23527a794052aacadf2630c8e96b8da7812fd"
+              "sha256": "34d0d6c7b84f06d2b344ae181c98e60b4cb36dc74082f29889c5433a9bbe81d3"
             }
           }
         ],
@@ -83,44 +83,44 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_000.png",
-        "sha256": "217bd8b58a346210fcfae6a92951f1afe5ecb731001cd70d2e840380791ab9f1"
-      },
-      {
-        "name": "page_002.png",
-        "sha256": "226ffc0fb17f6d79978819fa9f34818d5a629893cd0e0000367fbb96e2a1ef05"
-      },
-      {
-        "name": "page_004.png",
-        "sha256": "472a26a21f5e3366381f6e723c222575a6c529fc2ea5dc2672fc1eae5a0ef472"
+        "name": "page_000.png.thumb",
+        "sha256": "09178a86d3b24ee8a9481389c64a9d111030a7a2a0d6b89f3cca12cc12e7bb55"
       },
       {
         "name": "page_002.png.thumb",
-        "sha256": "6cfa21f357bb03ea47ff578ea7dd15f9404a2e381006c5916b88be6831c7239f"
+        "sha256": "19aead786cd5ce89cd2a3f2ae0aa4636fc6a9459ca4f10afdeed34e9f6e57211"
       },
       {
         "name": "page_001.png",
-        "sha256": "80e77f9ace538377936c3859740288cdb088b78266befd4b14521362dc1db61c"
-      },
-      {
-        "name": "page_001.png.thumb",
-        "sha256": "bae48f22519e544d3693aee07a70fb8efe810b42e594db2b49112d5b236cc4bd"
-      },
-      {
-        "name": "page_003.png.thumb",
-        "sha256": "d5577256bfe8cf4f20438c6c992e58d88a4749207c52383aa93d119d2cb1f721"
-      },
-      {
-        "name": "page_003.png",
-        "sha256": "da60eaaf764100ca7aee04e9573a61bb529eb6f85d7420f7b7e523698ea2a474"
-      },
-      {
-        "name": "page_000.png.thumb",
-        "sha256": "e0ceba4920468d7415b04f6be82712ffed487364dd0723a481f5aa900fad4f73"
+        "sha256": "2737cd863922f34fbe8cdf5ca9c868ea87421e6cb1f6ba9b4933798a38e8b6e3"
       },
       {
         "name": "page_004.png.thumb",
-        "sha256": "f7c7838b385cf286fd8fbd5f28e23527a794052aacadf2630c8e96b8da7812fd"
+        "sha256": "34d0d6c7b84f06d2b344ae181c98e60b4cb36dc74082f29889c5433a9bbe81d3"
+      },
+      {
+        "name": "page_003.png",
+        "sha256": "451c3b34308f0cd89570da08e4187c16b6df4bcb6dc9e8711af94df49252acfa"
+      },
+      {
+        "name": "page_001.png.thumb",
+        "sha256": "6898e9246c56c646ddf008decaf98d7312227c2662b50b072954dfe3074cbe33"
+      },
+      {
+        "name": "page_004.png",
+        "sha256": "81403d052c5939779d135b59f6a85e82a32b09796a3cd55bd4a1d796a707a8fc"
+      },
+      {
+        "name": "page_003.png.thumb",
+        "sha256": "a2b6a542eb6f2238e4a67121f76328c72710d1a0ebb9f0f2a6f4e175957953b3"
+      },
+      {
+        "name": "page_002.png",
+        "sha256": "af440e649f3381a4ee53d95ca3e48091e9bb2e859ba3d3f56309d51dd8fd5e25"
+      },
+      {
+        "name": "page_000.png",
+        "sha256": "df709743eb4d3e2990c546ee41515812806e79b8f8c77638237e2d90de43be88"
       }
     ]
   },

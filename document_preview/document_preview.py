@@ -28,6 +28,7 @@ from selenium.common.exceptions import NoAlertPresentException, WebDriverExcepti
 from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
+from documentbuilder.docbuilder import CDocBuilder
 
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
 
@@ -39,7 +40,7 @@ def pdfinfo_from_path(fp: str):
         # Clean up spacing
         v = v.lstrip()
         pdfinfo[k] = v
-    pdfinfo
+    return pdfinfo
 
 
 def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None):
@@ -111,25 +112,12 @@ class DocumentPreview(ServiceBase):
             if os.path.exists(output_path):
                 return output_path
 
-    def office_conversion(self, file, orientation="portrait", page_range_end=2):
+    def office_conversion(self, file):
         output_path = os.path.join(self.working_directory, "converted.pdf")
-        subprocess.run(
-            [
-                "unoconv",
-                "-f",
-                "pdf",
-                "-e",
-                f"PageRange=1-{page_range_end}",
-                "-P",
-                f"PaperOrientation={orientation}",
-                "-P",
-                "PaperFormat=A3",
-                "-o",
-                output_path,
-                file,
-            ],
-            capture_output=True,
-        )
+        builder = CDocBuilder()
+        builder.OpenFile(file, "")
+        builder.SaveFile("pdf", output_path)
+        builder.CloseFile()
         if os.path.exists(output_path):
             return output_path
 
@@ -190,7 +178,7 @@ class DocumentPreview(ServiceBase):
             orientation = (
                 "landscape" if any(request.file_type.endswith(type) for type in ["excel", "powerpoint"]) else "portrait"
             )
-            return self.office_conversion(request.file_path, orientation, max_pages)
+            return self.office_conversion(request.file_path)
         # CSV
         elif request.file_type == "text/csv":
             with tempfile.NamedTemporaryFile(dir=self.working_directory) as tmp:
@@ -215,7 +203,7 @@ class DocumentPreview(ServiceBase):
                         )  # adding a little extra space
                         worksheet.set_column(idx, idx, max_len)  # set column width
 
-                return self.office_conversion(tmp.name, "landscape", max_pages)
+                return self.office_conversion(tmp.name)
 
         # PDF
         elif request.file_type == "document/pdf":
@@ -279,6 +267,11 @@ class DocumentPreview(ServiceBase):
         image_section = ResultImageSection(request, "Preview Image(s)")
         run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")
         previews = [s for s in os.listdir(self.working_directory) if "output" in s]
+
+        if not previews:
+            # No previews found, unable to proceed
+            request.result = result
+            return
 
         def attach_images_to_section(run_ocr=False) -> str:
             extracted_text = ""

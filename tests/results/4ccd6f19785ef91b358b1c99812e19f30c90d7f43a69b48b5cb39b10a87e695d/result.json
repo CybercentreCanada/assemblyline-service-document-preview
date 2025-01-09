@@ -10,12 +10,12 @@
             "img": {
               "description": "Here's the preview for page 0",
               "name": "page_000.png",
-              "sha256": "74e31a854a4ea1f218cd60c5e3b75f40f45bf6b7dad40b0785baf43d0cafff9f"
+              "sha256": "60bca912a7ab0132ac8b18ee37c845f9108f987a28931addbae625538822141d"
             },
             "thumb": {
               "description": "Here's the preview for page 0 (thumbnail)",
               "name": "page_000.png.thumb",
-              "sha256": "19a6b3e98d7ae5d5a50435df59f7af071b12922eaa18e4fb5b87eeb139bed3f4"
+              "sha256": "0a3c327fe116b872952f57d93ac11dfb787e8e986da9d1d914ee430758d270ef"
             }
           }
         ],
@@ -36,11 +36,11 @@
     "supplementary": [
       {
         "name": "page_000.png.thumb",
-        "sha256": "19a6b3e98d7ae5d5a50435df59f7af071b12922eaa18e4fb5b87eeb139bed3f4"
+        "sha256": "0a3c327fe116b872952f57d93ac11dfb787e8e986da9d1d914ee430758d270ef"
       },
       {
         "name": "page_000.png",
-        "sha256": "74e31a854a4ea1f218cd60c5e3b75f40f45bf6b7dad40b0785baf43d0cafff9f"
+        "sha256": "60bca912a7ab0132ac8b18ee37c845f9108f987a28931addbae625538822141d"
       }
     ]
   },

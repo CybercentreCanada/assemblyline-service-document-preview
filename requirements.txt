@@ -9,5 +9,4 @@ pandas
 Pillow==10.3.0
 pytesseract
 selenium
-unoconv
 XlsxWriter

@@ -268,6 +268,11 @@ class DocumentPreview(ServiceBase):
         run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")
         previews = [s for s in os.listdir(self.working_directory) if "output" in s]
 
+        if not previews:
+            # No previews found, unable to proceed
+            request.result = result
+            return
+
         def attach_images_to_section(run_ocr=False) -> str:
             extracted_text = ""
             for i, preview in enumerate(natsorted(previews)):

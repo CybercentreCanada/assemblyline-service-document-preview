@@ -171,7 +171,7 @@ class DocumentPreview(ServiceBase):
 
     def render_documents(self, request: Request, max_pages=1) -> str:
         # Word/Excel/Powerpoint/RTF/ODT
-        if request.file_type == "document/odt/text" or any(
+        if request.file_type.startswith("document/odt") or any(
             request.file_type == f"document/office/{ms_product}"
             for ms_product in ["word", "excel", "powerpoint", "rtf"]
         ):

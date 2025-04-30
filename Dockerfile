@@ -25,17 +25,20 @@ RUN wget -O ./onlyoffice-documentbuilder.deb https://github.com/ONLYOFFICE/Docum
 # Add onlyoffice to PYTHONPATH
 ENV PYTHONPATH=$PYTHONPATH:/opt/onlyoffice
 
-# Download + Install google-chrome with the version matching the latest chromedriver
-RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | tee /etc/apt/trusted.gpg.d/google.asc >/dev/null && \
-    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && apt-get install -y google-chrome-stable && \
-    rm -rf /var/lib/apt/lists/*
+# Find out what is the latest version of the chromedriver & chome from chrome-for-testing available
+RUN VERS=$(wget -q -O - https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE) && \
+    # Download + Install google-chrome with the version matching the latest chromedriver
+    mkdir -p /opt/google && \
+    wget -O ./chrome-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/$VERS/linux64/chrome-linux64.zip && \
+    unzip ./chrome-linux64.zip && \
+    while read pkg; do apt-get satisfy -y --no-install-recommends "$pkg"; done < chrome-linux64/deb.deps &&\
+    mv chrome-linux64 /opt/google/chrome && \
+    ln -s /opt/google/chrome/chrome /usr/bin/google-chrome && \
 
-# Download + unzip the latest chromedriver
-RUN VERS=$(echo -n $(google-chrome --version | cut -c 15-)) && \
+    # Download + unzip the latest chromedriver
     wget -O ./chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/$VERS/linux64/chromedriver-linux64.zip && \
     unzip ./chromedriver-linux64.zip chromedriver-linux64/chromedriver && \
-    rm -f ./chromedriver-linux64.zip && \
+    rm -f ./chrome-linux64.zip ./chromedriver-linux64.zip && \
     mv ./chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
     # Cleanup
     rm -rf /tmp/*

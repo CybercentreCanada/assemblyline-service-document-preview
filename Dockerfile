@@ -2,8 +2,8 @@ ARG branch=latest
 FROM cccs/assemblyline-v4-service-base:$branch
 
 # Python path to the service class from your service directory
-ENV SERVICE_PATH document_preview.document_preview.DocumentPreview
-ENV DOCBUILDER_VERSION 8.2.0
+ENV SERVICE_PATH=document_preview.document_preview.DocumentPreview
+ENV DOCBUILDER_VERSION=8.2.0
 
 # Install apt dependencies
 USER root
@@ -23,17 +23,18 @@ RUN wget -O ./onlyoffice-documentbuilder.deb https://github.com/ONLYOFFICE/Docum
     rm -f ./onlyoffice-documentbuilder.deb
 
 # Add onlyoffice to PYTHONPATH
-ENV PYTHONPATH $PYTHONPATH:/opt/onlyoffice
+ENV PYTHONPATH=$PYTHONPATH:/opt/onlyoffice
 
-# Find out what is the latest version of the chrome-for-testing/chromedriver available
-RUN VERS=$(wget -q -O - https://googlechromelabs.github.io/chrome-for-testing/LATEST_RELEASE_STABLE) && \
-    # Download + Install google-chrome with the version matching the latest chromedriver
-    wget -O ./google-chrome-stable_amd64.deb https://dl.google.com/linux/chrome/deb/pool/main/g/google-chrome-stable/google-chrome-stable_$VERS-1_amd64.deb && \
-    apt install -y ./google-chrome-stable_amd64.deb && \
-    # Download + unzip the latest chromedriver
+# Download + Install google-chrome with the version matching the latest chromedriver
+RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | tee /etc/apt/trusted.gpg.d/google.asc >/dev/null && \
+    echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list && \
+    apt-get update && apt-get install -y google-chrome-stable
+
+# Download + unzip the latest chromedriver
+RUN VERS=$(echo -n $(google-chrome --version | cut -c 15-)) && \
     wget -O ./chromedriver-linux64.zip https://storage.googleapis.com/chrome-for-testing-public/$VERS/linux64/chromedriver-linux64.zip && \
     unzip ./chromedriver-linux64.zip chromedriver-linux64/chromedriver && \
-    rm -f ./google-chrome-stable_current_amd64.deb ./chromedriver-linux64.zip && \
+    rm -f ./chromedriver-linux64.zip && \
     mv ./chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
     # Cleanup
     rm -rf /tmp/*
@@ -58,7 +59,7 @@ ARG version=1.0.0.dev1
 USER root
 RUN sed -i -e "s/\$SERVICE_TAG/$version/g" service_manifest.yml
 # Add uno package to PYTHONPATH
-ENV PYTHONPATH $PYTHONPATH:/usr/lib/python3/dist-packages/
+ENV PYTHONPATH=$PYTHONPATH:/usr/lib/python3/dist-packages/
 
 # From @kam193's OOPreview service - fixes the issue where DocBuilder fails at conversion unless first used by root
 # Ref: https://github.com/kam193/assemblyline-services/blob/main/oo-preview/service/finish_installation.py

@@ -28,7 +28,8 @@ ENV PYTHONPATH=$PYTHONPATH:/opt/onlyoffice
 # Download + Install google-chrome with the version matching the latest chromedriver
 RUN wget -q -O - https://dl.google.com/linux/linux_signing_key.pub | tee /etc/apt/trusted.gpg.d/google.asc >/dev/null && \
     echo "deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main" | tee /etc/apt/sources.list.d/google-chrome.list && \
-    apt-get update && apt-get install -y google-chrome-stable
+    apt-get update && apt-get install -y google-chrome-stable && \
+    rm -rf /var/lib/apt/lists/*
 
 # Download + unzip the latest chromedriver
 RUN VERS=$(echo -n $(google-chrome --version | cut -c 15-)) && \
@@ -38,8 +39,6 @@ RUN VERS=$(echo -n $(google-chrome --version | cut -c 15-)) && \
     mv ./chromedriver-linux64/chromedriver /usr/bin/chromedriver && \
     # Cleanup
     rm -rf /tmp/*
-
-RUN rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies
 USER assemblyline

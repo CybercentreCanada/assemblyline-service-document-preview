@@ -170,14 +170,11 @@ class DocumentPreview(ServiceBase):
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)
 
     def render_documents(self, request: Request, max_pages=1) -> str:
-        # Word/Excel/Powerpoint/RTF
-        if any(
+        # Word/Excel/Powerpoint/RTF/ODT
+        if request.file_type.startswith("document/odt") or any(
             request.file_type == f"document/office/{ms_product}"
             for ms_product in ["word", "excel", "powerpoint", "rtf"]
         ):
-            orientation = (
-                "landscape" if any(request.file_type.endswith(type) for type in ["excel", "powerpoint"]) else "portrait"
-            )
             return self.office_conversion(request.file_path)
         # CSV
         elif request.file_type == "text/csv":

@@ -80,7 +80,24 @@
     ]
   },
   "files": {
-    "extracted": [],
+    "extracted": [
+      {
+        "name": "ppt/media/image4.jpeg",
+        "sha256": "2756cca351c37d85bf5b6b9cedc6ec63f99b00850b5ae3b2835344c1d80c71f0"
+      },
+      {
+        "name": "ppt/media/image2.emf",
+        "sha256": "51af4f8687cec973d7aebedda0e46586be49dcc137cf6e29d2c2f16a385113af"
+      },
+      {
+        "name": "ppt/media/image1.png",
+        "sha256": "d85978418de77367faee2f033f416f97ae2aba7379bd47f626642a231840d142"
+      },
+      {
+        "name": "ppt/media/image3.emf",
+        "sha256": "eef57a620c01c42ec8e01d24e189205124d66f77f8b16e6294108c5d523d0da6"
+      }
+    ],
     "supplementary": [
       {
         "name": "page_000.png.thumb",

@@ -1,37 +1,38 @@
 import os
-import pandas
 import subprocess
 import tempfile
+from base64 import b64decode, b64encode
+from io import StringIO
 from time import time
 from typing import List
+from zipfile import BadZipFile, ZipFile
 
+import pandas
+from assemblyline.common import forge
 from assemblyline_v4_service.common.base import ServiceBase
+from assemblyline_v4_service.common.ocr import detections as indicator_detections
+from assemblyline_v4_service.common.ocr import ocr_detections
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import (
     Heuristic,
     Result,
-    ResultSection,
     ResultImageSection,
-    ResultTextSection,
     ResultKeyValueSection,
+    ResultSection,
+    ResultTextSection,
 )
-from assemblyline_v4_service.common.ocr import detections as indicator_detections, ocr_detections
 from assemblyline_v4_service.common.utils import extract_passwords
-
-from base64 import b64decode, b64encode
-from io import StringIO
+from documentbuilder.docbuilder import CDocBuilder
 from multidecoder.decoders.network import find_emails, find_urls
+from natsort import natsorted
+from selenium.common.exceptions import NoAlertPresentException, WebDriverException
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
-from selenium.common.exceptions import NoAlertPresentException, WebDriverException
-
-from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
-from documentbuilder.docbuilder import CDocBuilder
 
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
-
+IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
 
 def pdfinfo_from_path(fp: str):
     pdfinfo = {}
@@ -112,7 +113,30 @@ class DocumentPreview(ServiceBase):
             if os.path.exists(output_path):
                 return output_path
 
-    def office_conversion(self, file):
+    def office_conversion(self, file: str, request: Request = None):
+        # Extract all media from the Office document if they're an image
+        if request:
+            try:
+                with ZipFile(file, "r") as zf:
+                    extracted_images_dir = os.path.join(self.working_directory, "extracted_media")
+                    for media in [fn for fn in zf.namelist() if "/media/" in fn]:
+                        # Extract the media file
+                        zf.extract(media, extracted_images_dir)
+                        media_path = os.path.join(extracted_images_dir, media)
+                        # Ensure the media extracted is an image
+                        if IDENTIFY.fileinfo(media_path, generate_hashes=False,
+                                            skip_fuzzy_hashes=True, calculate_entropy=False)['type'].startswith("image/"):
+                            request.add_extracted(
+                                media_path,
+                                name=media,
+                                description="Extracted media from Office document"
+                            )
+            except BadZipFile:
+                # Can't extract media from the file, likely not a valid Office document
+                pass
+
+
+        # Convert Office documents to PDF using CDocBuilder
         output_path = os.path.join(self.working_directory, "converted.pdf")
         builder = CDocBuilder()
         builder.OpenFile(file, "")
@@ -175,7 +199,7 @@ class DocumentPreview(ServiceBase):
             request.file_type == f"document/office/{ms_product}"
             for ms_product in ["word", "excel", "powerpoint", "rtf"]
         ):
-            return self.office_conversion(request.file_path)
+            return self.office_conversion(request.file_path, request)
         # CSV
         elif request.file_type == "text/csv":
             with tempfile.NamedTemporaryFile(dir=self.working_directory) as tmp:

@@ -119,16 +119,23 @@ class DocumentPreview(ServiceBase):
             try:
                 with ZipFile(file, "r") as zf:
                     extracted_images_dir = os.path.join(self.working_directory, "extracted_media")
-                    for media in [fn for fn in zf.namelist() if "/media/" in fn]:
+                    for media in zf.filelist:
+                        if media.is_dir():
+                            # Skipping directories
+                            continue
+                        elif "/media/" not in media.filename:
+                            # Not a media file, skip
+                            continue
+
                         # Extract the media file
                         zf.extract(media, extracted_images_dir)
-                        media_path = os.path.join(extracted_images_dir, media)
+                        media_path = os.path.join(extracted_images_dir, media.filename)
                         # Ensure the media extracted is an image
                         if IDENTIFY.fileinfo(media_path, generate_hashes=False,
                                             skip_fuzzy_hashes=True, calculate_entropy=False)['type'].startswith("image/"):
                             request.add_extracted(
                                 media_path,
-                                name=media,
+                                name=media.filename,
                                 description="Extracted media from Office document"
                             )
             except BadZipFile:

@@ -114,9 +114,9 @@ class DocumentPreview(ServiceBase):
             if os.path.exists(output_path):
                 return output_path
 
-    def office_conversion(self, file: str, request: Request = None):
+    def office_conversion(self, file: str, request: Request) -> str:
         # Extract all media from the Office document if they're an image
-        if request:
+        if request.file_type != "text/csv":
             try:
                 with ZipFile(file, "r") as zf:
                     extracted_images_dir = os.path.join(self.working_directory, "extracted_media")
@@ -145,9 +145,17 @@ class DocumentPreview(ServiceBase):
 
 
         # Convert Office documents to PDF using CDocBuilder
+        # Ref: https://api.onlyoffice.com/docs/office-api/get-started/overview/
         output_path = os.path.join(self.working_directory, "converted.pdf")
         builder = CDocBuilder()
         builder.OpenFile(file, "")
+
+        if request.file_type == "document/office/excel" or request.file_type == "text/csv":
+            # Adjust the orientation of spreadsheets before conversion
+            api = builder.GetContext().GetGlobal()["Api"]
+            spreadsheet = api.Call("GetActiveSheet")
+            spreadsheet.SetProperty("PageOrientation", "xlLandscape")
+
         builder.SaveFile("pdf", output_path)
         builder.CloseFile()
         if os.path.exists(output_path):
@@ -213,7 +221,7 @@ class DocumentPreview(ServiceBase):
             with tempfile.NamedTemporaryFile(dir=self.working_directory) as tmp:
                 with pandas.ExcelWriter(tmp) as writer:
                     # Convert CSV to Excel spreadsheet, then render
-                    df = pandas.read_csv(request.file_path)
+                    df = pandas.read_csv(request.file_path, on_bad_lines="skip")
                     df.to_excel(writer, index=False)
                     worksheet = writer.sheets["Sheet1"]
 
@@ -232,7 +240,7 @@ class DocumentPreview(ServiceBase):
                         )  # adding a little extra space
                         worksheet.set_column(idx, idx, max_len)  # set column width
 
-                return self.office_conversion(tmp.name)
+                return self.office_conversion(tmp.name, request)
 
         # PDF
         elif request.file_type == "document/pdf":

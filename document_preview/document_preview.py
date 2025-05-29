@@ -1,37 +1,39 @@
 import os
-import pandas
 import subprocess
 import tempfile
+from base64 import b64decode, b64encode
+from io import StringIO
 from time import time
 from typing import List
+from zipfile import BadZipFile, ZipFile
 
+import pandas
+from assemblyline.common import forge
+from assemblyline.common.exceptions import RecoverableError
 from assemblyline_v4_service.common.base import ServiceBase
+from assemblyline_v4_service.common.ocr import detections as indicator_detections
+from assemblyline_v4_service.common.ocr import ocr_detections
 from assemblyline_v4_service.common.request import ServiceRequest as Request
 from assemblyline_v4_service.common.result import (
     Heuristic,
     Result,
-    ResultSection,
     ResultImageSection,
-    ResultTextSection,
     ResultKeyValueSection,
+    ResultSection,
+    ResultTextSection,
 )
-from assemblyline_v4_service.common.ocr import detections as indicator_detections, ocr_detections
 from assemblyline_v4_service.common.utils import extract_passwords
-
-from base64 import b64decode, b64encode
-from io import StringIO
+from documentbuilder.docbuilder import CDocBuilder
 from multidecoder.decoders.network import find_emails, find_urls
+from natsort import natsorted
+from selenium.common.exceptions import NoAlertPresentException, WebDriverException
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
-from selenium.common.exceptions import NoAlertPresentException, WebDriverException
-
-from natsort import natsorted
 
 from document_preview.helper.emlrender import processEml as eml2image
-from documentbuilder.docbuilder import CDocBuilder
 
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
-
+IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
 
 def pdfinfo_from_path(fp: str):
     pdfinfo = {}
@@ -112,10 +114,48 @@ class DocumentPreview(ServiceBase):
             if os.path.exists(output_path):
                 return output_path
 
-    def office_conversion(self, file):
+    def office_conversion(self, file: str, request: Request) -> str:
+        # Extract all media from the Office document if they're an image
+        if request.file_type != "text/csv":
+            try:
+                with ZipFile(file, "r") as zf:
+                    extracted_images_dir = os.path.join(self.working_directory, "extracted_media")
+                    for media in zf.filelist:
+                        if media.is_dir():
+                            # Skipping directories
+                            continue
+                        elif "/media/" not in media.filename:
+                            # Not a media file, skip
+                            continue
+
+                        # Extract the media file
+                        zf.extract(media, extracted_images_dir)
+                        media_path = os.path.join(extracted_images_dir, media.filename)
+                        # Ensure the media extracted is an image
+                        if IDENTIFY.fileinfo(media_path, generate_hashes=False,
+                                            skip_fuzzy_hashes=True, calculate_entropy=False)['type'].startswith("image/"):
+                            request.add_extracted(
+                                media_path,
+                                name=media.filename,
+                                description="Extracted media from Office document"
+                            )
+            except BadZipFile:
+                # Can't extract media from the file, likely not a valid Office document
+                pass
+
+
+        # Convert Office documents to PDF using CDocBuilder
+        # Ref: https://api.onlyoffice.com/docs/office-api/get-started/overview/
         output_path = os.path.join(self.working_directory, "converted.pdf")
         builder = CDocBuilder()
         builder.OpenFile(file, "")
+
+        if request.file_type == "document/office/excel" or request.file_type == "text/csv":
+            # Adjust the orientation of spreadsheets before conversion
+            api = builder.GetContext().GetGlobal()["Api"]
+            spreadsheet = api.Call("GetActiveSheet")
+            spreadsheet.SetProperty("PageOrientation", "xlLandscape")
+
         builder.SaveFile("pdf", output_path)
         builder.CloseFile()
         if os.path.exists(output_path):
@@ -175,13 +215,13 @@ class DocumentPreview(ServiceBase):
             request.file_type == f"document/office/{ms_product}"
             for ms_product in ["word", "excel", "powerpoint", "rtf"]
         ):
-            return self.office_conversion(request.file_path)
+            return self.office_conversion(request.file_path, request)
         # CSV
         elif request.file_type == "text/csv":
             with tempfile.NamedTemporaryFile(dir=self.working_directory) as tmp:
                 with pandas.ExcelWriter(tmp) as writer:
                     # Convert CSV to Excel spreadsheet, then render
-                    df = pandas.read_csv(request.file_path)
+                    df = pandas.read_csv(request.file_path, on_bad_lines="skip")
                     df.to_excel(writer, index=False)
                     worksheet = writer.sheets["Sheet1"]
 
@@ -200,7 +240,7 @@ class DocumentPreview(ServiceBase):
                         )  # adding a little extra space
                         worksheet.set_column(idx, idx, max_len)  # set column width
 
-                return self.office_conversion(tmp.name)
+                return self.office_conversion(tmp.name, request)
 
         # PDF
         elif request.file_type == "document/pdf":
@@ -256,10 +296,14 @@ class DocumentPreview(ServiceBase):
                 # Convert PDF to images for ImageSection
                 self.pdf_to_images(pdf_path, max_pages)
         except Exception as e:
-            # Unable to complete analysis after unexpected error, give up
-            self.log.error(e)
-            request.result = result
-            return
+            # If we run into an error with no message, raise as a recoverable error to try again
+            if not str(e):
+                raise RecoverableError()
+            else:
+                # Unable to complete analysis after unexpected error, log exception and give up
+                self.log.error(e)
+                request.result = result
+                return
         # Create an image gallery section to show the renderings
         image_section = ResultImageSection(request, "Preview Image(s)")
         run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")

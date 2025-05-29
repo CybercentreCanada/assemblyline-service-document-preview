@@ -9,6 +9,7 @@ from zipfile import BadZipFile, ZipFile
 
 import pandas
 from assemblyline.common import forge
+from assemblyline.common.exceptions import RecoverableError
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
 from assemblyline_v4_service.common.ocr import ocr_detections
@@ -287,10 +288,14 @@ class DocumentPreview(ServiceBase):
                 # Convert PDF to images for ImageSection
                 self.pdf_to_images(pdf_path, max_pages)
         except Exception as e:
-            # Unable to complete analysis after unexpected error, give up
-            self.log.error(e)
-            request.result = result
-            return
+            # If we run into an error with no message, raise as a recoverable error to try again
+            if not str(e):
+                raise RecoverableError()
+            else:
+                # Unable to complete analysis after unexpected error, log exception and give up
+                self.log.error(e)
+                request.result = result
+                return
         # Create an image gallery section to show the renderings
         image_section = ResultImageSection(request, "Preview Image(s)")
         run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")

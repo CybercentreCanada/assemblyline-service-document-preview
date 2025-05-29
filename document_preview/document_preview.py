@@ -8,8 +8,6 @@ from typing import List
 from zipfile import BadZipFile, ZipFile
 
 import pandas
-from assemblyline.common import forge
-from assemblyline.common.exceptions import RecoverableError
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
 from assemblyline_v4_service.common.ocr import ocr_detections
@@ -30,6 +28,8 @@ from selenium.common.exceptions import NoAlertPresentException, WebDriverExcepti
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 
+from assemblyline.common import forge
+from assemblyline.common.exceptions import RecoverableError
 from document_preview.helper.emlrender import processEml as eml2image
 
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
@@ -298,7 +298,7 @@ class DocumentPreview(ServiceBase):
         except Exception as e:
             # If we run into an error with no message, raise as a recoverable error to try again
             if not str(e):
-                raise RecoverableError()
+                raise RecoverableError("No explicit error message provided, retrying analysis..")
             else:
                 # Unable to complete analysis after unexpected error, log exception and give up
                 self.log.error(e)

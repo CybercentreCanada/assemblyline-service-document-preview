@@ -390,9 +390,14 @@ class DocumentPreview(ServiceBase):
                 # We were able to extract content, perform term detection
                 detections = indicator_detections(extracted_text)
 
-                # Check to see if there's any potential passwords in the extracted text
-                password_detections = extract_passwords(extracted_text)
-                request.temp_submission_data.setdefault("passwords", []).extend(list(password_detections))
+                # Check to see if there's any potential passwords in the extracted text with extra scrutiny
+                # Let's make the assumption that a password in a phishing document is likely to be a weak password
+                # Ref: https://www.bleepingcomputer.com/news/security/virustotal-finds-hidden-malware-phishing-campaign-in-svg-files/amp/
+                password_detections = {
+                    pw for pw in extract_passwords(extracted_text) if len(pw) <= 12 and pw.isupper() and pw.isalnum()
+                }
+                if password_detections:
+                    request.temp_submission_data.setdefault("passwords", []).extend(list(password_detections))
 
                 # Try to extract any images from the page range and run them through OCR
                 for image_path in self.extract_pdf_images(pdf_path, max_pages):

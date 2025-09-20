@@ -144,6 +144,15 @@
   "results": {
     "heuristics": [],
     "tags": {},
-    "temp_submission_data": {}
+    "temp_submission_data": {
+      "passwords": [
+        "XXXXXXXX",
+        "B",
+        "XX",
+        "D",
+        "C",
+        "A"
+      ]
+    }
   }
 }

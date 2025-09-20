@@ -47,6 +47,13 @@
   "results": {
     "heuristics": [],
     "tags": {},
-    "temp_submission_data": {}
+    "temp_submission_data": {
+      "passwords": [
+        "Open",
+        "Inc",
+        "Cosmetics",
+        "United"
+      ]
+    }
   }
 }

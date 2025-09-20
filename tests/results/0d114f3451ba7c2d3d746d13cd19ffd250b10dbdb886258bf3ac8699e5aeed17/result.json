@@ -17,6 +17,30 @@
               "name": "page_000.png.thumb",
               "sha256": "744179b5e80c58ce4aaf33d52dac3abe1236574c3401d7971ee32aa91160e6d1"
             }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for page 1",
+              "name": "page_001.png",
+              "sha256": "fc8164bd3b412dd2b1b816dd131b55c1b157dc00ef840d3488780418530f843f"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 1 (thumbnail)",
+              "name": "page_001.png.thumb",
+              "sha256": "744179b5e80c58ce4aaf33d52dac3abe1236574c3401d7971ee32aa91160e6d1"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for page 2",
+              "name": "page_002.png",
+              "sha256": "fc8164bd3b412dd2b1b816dd131b55c1b157dc00ef840d3488780418530f843f"
+            },
+            "thumb": {
+              "description": "Here's the preview for page 2 (thumbnail)",
+              "name": "page_002.png.thumb",
+              "sha256": "744179b5e80c58ce4aaf33d52dac3abe1236574c3401d7971ee32aa91160e6d1"
+            }
           }
         ],
         "body_config": {},
@@ -39,7 +63,23 @@
         "sha256": "744179b5e80c58ce4aaf33d52dac3abe1236574c3401d7971ee32aa91160e6d1"
       },
       {
+        "name": "page_001.png.thumb",
+        "sha256": "744179b5e80c58ce4aaf33d52dac3abe1236574c3401d7971ee32aa91160e6d1"
+      },
+      {
+        "name": "page_002.png.thumb",
+        "sha256": "744179b5e80c58ce4aaf33d52dac3abe1236574c3401d7971ee32aa91160e6d1"
+      },
+      {
         "name": "page_000.png",
+        "sha256": "fc8164bd3b412dd2b1b816dd131b55c1b157dc00ef840d3488780418530f843f"
+      },
+      {
+        "name": "page_001.png",
+        "sha256": "fc8164bd3b412dd2b1b816dd131b55c1b157dc00ef840d3488780418530f843f"
+      },
+      {
+        "name": "page_002.png",
         "sha256": "fc8164bd3b412dd2b1b816dd131b55c1b157dc00ef840d3488780418530f843f"
       }
     ]
@@ -47,6 +87,8 @@
   "results": {
     "heuristics": [],
     "tags": {},
-    "temp_submission_data": {}
+    "temp_submission_data": {
+      "passwords": []
+    }
   }
 }

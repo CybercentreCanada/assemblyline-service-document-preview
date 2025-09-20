@@ -8,8 +8,6 @@ from typing import List
 from zipfile import BadZipFile, ZipFile
 
 import pandas
-from assemblyline.common import forge
-from assemblyline.common.exceptions import RecoverableError
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
 from assemblyline_v4_service.common.ocr import ocr_detections
@@ -31,6 +29,8 @@ from selenium.common.exceptions import NoAlertPresentException, WebDriverExcepti
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 
+from assemblyline.common import forge
+from assemblyline.common.exceptions import RecoverableError
 from document_preview.helper.emlrender import processEml as eml2image
 
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
@@ -382,6 +382,7 @@ class DocumentPreview(ServiceBase):
             # try to extract the text from that rather than relying on OCR for everything
             extracted_text_path = self.extract_pdf_text(pdf_path, max_pages) if pdf_path else None
             extracted_text = ""
+            pw_list = set(request.temp_submission_data.get("passwords", []))
             if extracted_text_path is not None:
                 extracted_text = open(extracted_text_path, "r").read()
                 # Add all images to section
@@ -410,9 +411,7 @@ class DocumentPreview(ServiceBase):
                 if detections:
                     # If we were able to detect potential passwords, add it to the submission's password list
                     if detections.get("password"):
-                        pw_list = set(request.temp_submission_data.get("passwords", []))
                         [pw_list.update(extract_passwords(pw_string)) for pw_string in detections["password"]]
-                        request.temp_submission_data["passwords"] = sorted(pw_list)
 
                     heuristic = Heuristic(
                         1,
@@ -428,6 +427,20 @@ class DocumentPreview(ServiceBase):
             else:
                 # Unable to extract text from PDF, run it through Tesseract for term detection
                 extracted_text += attach_images_to_section(run_ocr=True)
+
+            # Check the extracted text for any potential passwords as well
+            # Let's make the assumption that a password in a phishing document is likely to be a weak password
+            # Ref: https://www.bleepingcomputer.com/news/security/virustotal-finds-hidden-malware-phishing-campaign-in-svg-files/amp/
+            pw_list.update(
+                {
+                    pw
+                    for pw in extract_passwords(extracted_text)
+                    if 4 <= len(pw) <= 12 and pw.isupper() and pw.isalnum()
+                }
+            )
+
+            if pw_list:
+                request.temp_submission_data["passwords"] = sorted(pw_list)
 
             # Tag any network IOCs found in OCR output
             self.tag_network_iocs(image_section, extracted_text)

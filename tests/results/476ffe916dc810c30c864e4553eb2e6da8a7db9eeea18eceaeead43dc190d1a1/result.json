@@ -103,18 +103,9 @@
     },
     "temp_submission_data": {
       "passwords": [
-        "FDA",
-        "MFPM",
-        "JK",
-        "SOLIRIS",
-        "DOB",
         "HIPAA",
-        "F",
-        "R",
-        "OCT",
-        "FU",
-        "DEC",
-        "C"
+        "MFPM",
+        "SOLIRIS"
       ]
     }
   }

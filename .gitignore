@@ -214,3 +214,7 @@ tags
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/python,vim,visualstudiocode
+
+# Remove any local test files and result directories that should not be committed
+**/*_documentpreview
+**/*.cart

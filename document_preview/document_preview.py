@@ -2,12 +2,15 @@ import os
 import subprocess
 import tempfile
 from base64 import b64decode, b64encode
+from hashlib import sha256
 from io import StringIO
 from time import time
 from typing import List
 from zipfile import BadZipFile, ZipFile
 
 import pandas
+from assemblyline.common import forge
+from assemblyline.common.exceptions import RecoverableError
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
 from assemblyline_v4_service.common.ocr import ocr_detections
@@ -21,6 +24,7 @@ from assemblyline_v4_service.common.result import (
     ResultTextSection,
 )
 from assemblyline_v4_service.common.utils import extract_passwords
+from bs4 import BeautifulSoup
 from documentbuilder.docbuilder import CDocBuilder
 from multidecoder.decoders.network import find_emails, find_urls
 from natsort import natsorted
@@ -28,12 +32,11 @@ from selenium.common.exceptions import NoAlertPresentException, WebDriverExcepti
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 
-from assemblyline.common import forge
-from assemblyline.common.exceptions import RecoverableError
 from document_preview.helper.emlrender import processEml as eml2image
 
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
+BLANK_PNG_SHA256 = "f1e68604581dc8816bc8b13a095814d71e910c6a37fd76c96384a8373cca6e95"
 
 def pdfinfo_from_path(fp: str):
     pdfinfo = {}
@@ -277,7 +280,20 @@ class DocumentPreview(ServiceBase):
             )
         # HTML
         elif request.file_type == "code/html":
-            return self.html_render(request.file_contents, max_pages)
+            self.pdf_to_images(self.html_render(request.file_contents, max_pages), max_pages)
+            # Check the images produced to see if they're blank (i.e. white page)
+            png_hashes = set()
+            for img in os.listdir(self.working_directory):
+                with open(os.path.join(self.working_directory, img), "rb") as img_fh:
+                    png_hashes.add(sha256(img_fh.read()).hexdigest())
+            if len(png_hashes) == 1 and png_hashes.pop() == BLANK_PNG_SHA256:
+                # Let's see if we can strip any script tags and try again
+                self.log.info("HTML rendered to blank page, attempting to strip scripts and re-render")
+                bsoup = BeautifulSoup(request.file_contents, "html.parser")
+                [s.extract() for s in bsoup("script")]
+                scriptless_html = str(bsoup).encode()
+                self.pdf_to_images(self.html_render(scriptless_html, max_pages), max_pages)
+
 
     def tag_network_iocs(self, section: ResultSection, ocr_content: str) -> None:
         [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]

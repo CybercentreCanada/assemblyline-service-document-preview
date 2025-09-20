@@ -38,6 +38,7 @@ PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
 BLANK_PNG_SHA256 = "f1e68604581dc8816bc8b13a095814d71e910c6a37fd76c96384a8373cca6e95"
 
+
 def pdfinfo_from_path(fp: str):
     pdfinfo = {}
     for info in subprocess.run(["pdfinfo", fp], capture_output=True).stdout.strip().decode().split("\n"):
@@ -52,7 +53,10 @@ def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=No
     pdf_conv_command = ["pdftoppm", "-r", PDFTOPPM_DPI, "-png", "-f", str(first_page)]
     if last_page:
         pdf_conv_command += ["-l", str(last_page)]
-    subprocess.run(pdf_conv_command + [fp, os.path.join(output_directory, "output")], capture_output=True)
+    subprocess.run(
+        pdf_conv_command + [fp, os.path.join(output_directory, "output")],
+        capture_output=True,
+    )
 
 
 class DocumentPreview(ServiceBase):
@@ -92,7 +96,16 @@ class DocumentPreview(ServiceBase):
     def extract_pdf_images(self, path: str, max_pages: int) -> List[str]:
         output_path_prefix = os.path.join(self.working_directory, "extracted_image")
         subprocess.run(
-            ["pdfimages", "-f", "1", "-l", str(max_pages), "-png", path, output_path_prefix],
+            [
+                "pdfimages",
+                "-f",
+                "1",
+                "-l",
+                str(max_pages),
+                "-png",
+                path,
+                output_path_prefix,
+            ],
             capture_output=True,
         )
 
@@ -135,17 +148,20 @@ class DocumentPreview(ServiceBase):
                         zf.extract(media, extracted_images_dir)
                         media_path = os.path.join(extracted_images_dir, media.filename)
                         # Ensure the media extracted is an image
-                        if IDENTIFY.fileinfo(media_path, generate_hashes=False,
-                                            skip_fuzzy_hashes=True, calculate_entropy=False)['type'].startswith("image/"):
+                        if IDENTIFY.fileinfo(
+                            media_path,
+                            generate_hashes=False,
+                            skip_fuzzy_hashes=True,
+                            calculate_entropy=False,
+                        )["type"].startswith("image/"):
                             request.add_extracted(
                                 media_path,
                                 name=media.filename,
-                                description="Extracted media from Office document"
+                                description="Extracted media from Office document",
                             )
             except BadZipFile:
                 # Can't extract media from the file, likely not a valid Office document
                 pass
-
 
         # Convert Office documents to PDF using CDocBuilder
         # Ref: https://api.onlyoffice.com/docs/office-api/get-started/overview/
@@ -294,7 +310,6 @@ class DocumentPreview(ServiceBase):
                 scriptless_html = str(bsoup).encode()
                 self.pdf_to_images(self.html_render(scriptless_html, max_pages), max_pages)
 
-
     def tag_network_iocs(self, section: ResultSection, ocr_content: str) -> None:
         [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]
         [section.add_tag("network.static.uri", node.value) for node in find_urls(ocr_content.encode())]
@@ -390,7 +405,10 @@ class DocumentPreview(ServiceBase):
                         [pw_list.update(extract_passwords(pw_string)) for pw_string in detections["password"]]
                         request.temp_submission_data["passwords"] = sorted(pw_list)
 
-                    heuristic = Heuristic(1, signatures={f"{k}_strings": len(v) for k, v in detections.items()})
+                    heuristic = Heuristic(
+                        1,
+                        signatures={f"{k}_strings": len(v) for k, v in detections.items()},
+                    )
                     ocr_section = ResultKeyValueSection(
                         f"Suspicious strings found during OCR analysis on file {request.file_name}"
                     )
@@ -414,7 +432,11 @@ class DocumentPreview(ServiceBase):
                     extracted_text_fh.flush()
 
                     # Write content to disk to be uploaded
-                    add_params = dict(path=extracted_text_fh.name, name="ocr_output_dump", description="OCR Output")
+                    add_params = dict(
+                        path=extracted_text_fh.name,
+                        name="ocr_output_dump",
+                        description="OCR Output",
+                    )
                     if save_ocr_output == "as_extracted":
                         request.add_extracted(**add_params)
                     elif save_ocr_output == "as_supplementary":

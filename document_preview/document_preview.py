@@ -2,7 +2,6 @@ import os
 import subprocess
 import tempfile
 from base64 import b64decode, b64encode
-from hashlib import sha256
 from io import StringIO
 from time import time
 from typing import List
@@ -36,7 +35,6 @@ from document_preview.helper.emlrender import processEml as eml2image
 
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
-BLANK_PNG_SHA256 = "f1e68604581dc8816bc8b13a095814d71e910c6a37fd76c96384a8373cca6e95"
 
 
 def pdfinfo_from_path(fp: str):
@@ -49,12 +47,12 @@ def pdfinfo_from_path(fp: str):
     return pdfinfo
 
 
-def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None):
+def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None, context="original"):
     pdf_conv_command = ["pdftoppm", "-r", PDFTOPPM_DPI, "-png", "-f", str(first_page)]
     if last_page:
         pdf_conv_command += ["-l", str(last_page)]
     subprocess.run(
-        pdf_conv_command + [fp, os.path.join(output_directory, "output")],
+        pdf_conv_command + [fp, os.path.join(output_directory, f"output_{context}")],
         capture_output=True,
     )
 
@@ -225,8 +223,8 @@ class DocumentPreview(ServiceBase):
                     self.browser.close()
                     self.browser.switch_to.window(self.browser.window_handles[-1])
 
-    def pdf_to_images(self, file, max_pages=None):
-        convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages)
+    def pdf_to_images(self, file, max_pages=None, context="original"):
+        convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages, context=context)
 
     def render_documents(self, request: Request, max_pages=1) -> str:
         # Word/Excel/Powerpoint/RTF/ODT
@@ -296,19 +294,19 @@ class DocumentPreview(ServiceBase):
             )
         # HTML
         elif request.file_type == "code/html":
+            # Render the original HTML first
             self.pdf_to_images(self.html_render(request.file_contents, max_pages), max_pages)
-            # Check the images produced to see if they're blank (i.e. white page)
-            png_hashes = set()
-            for img in os.listdir(self.working_directory):
-                with open(os.path.join(self.working_directory, img), "rb") as img_fh:
-                    png_hashes.add(sha256(img_fh.read()).hexdigest())
-            if len(png_hashes) == 1 and png_hashes.pop() == BLANK_PNG_SHA256:
-                # Let's see if we can strip any script tags and try again
-                self.log.info("HTML rendered to blank page, attempting to strip scripts and re-render")
-                bsoup = BeautifulSoup(request.file_contents, "html.parser")
-                [s.extract() for s in bsoup("script")]
-                scriptless_html = str(bsoup).encode()
-                self.pdf_to_images(self.html_render(scriptless_html, max_pages), max_pages)
+
+            # Render the HTML with scripts removed
+            bsoup = BeautifulSoup(request.file_contents, "html.parser")
+            [s.extract() for s in bsoup("script")]
+            scriptless_html = str(bsoup).encode()
+            self.pdf_to_images(self.html_render(scriptless_html, max_pages), max_pages, context="scriptless")
+
+            # Render the HTML with styling removed (we'll use this version for OCR)
+            [s.extract() for s in bsoup("style")]
+            styleless_html = str(bsoup).encode()
+            return self.html_render(styleless_html, max_pages)
 
     def tag_network_iocs(self, section: ResultSection, ocr_content: str) -> None:
         [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]
@@ -325,7 +323,9 @@ class DocumentPreview(ServiceBase):
             pdf_path = self.render_documents(request, max_pages)
             if pdf_path:
                 # Convert PDF to images for ImageSection
-                self.pdf_to_images(pdf_path, max_pages)
+                self.pdf_to_images(
+                    pdf_path, max_pages, context="styleless" if request.file_type == "code/html" else "original"
+                )
         except Exception as e:
             # If we run into an error with no message, raise as a recoverable error to try again
             if not str(e):
@@ -389,6 +389,10 @@ class DocumentPreview(ServiceBase):
 
                 # We were able to extract content, perform term detection
                 detections = indicator_detections(extracted_text)
+
+                # Check to see if there's any potential passwords in the extracted text
+                password_detections = extract_passwords(extracted_text)
+                request.temp_submission_data.setdefault("passwords", []).extend(list(password_detections))
 
                 # Try to extract any images from the page range and run them through OCR
                 for image_path in self.extract_pdf_images(pdf_path, max_pages):

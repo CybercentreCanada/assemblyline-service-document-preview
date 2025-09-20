@@ -8,6 +8,8 @@ from typing import List
 from zipfile import BadZipFile, ZipFile
 
 import pandas
+from assemblyline.common import forge
+from assemblyline.common.exceptions import RecoverableError
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
 from assemblyline_v4_service.common.ocr import ocr_detections
@@ -29,8 +31,6 @@ from selenium.common.exceptions import NoAlertPresentException, WebDriverExcepti
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 
-from assemblyline.common import forge
-from assemblyline.common.exceptions import RecoverableError
 from document_preview.helper.emlrender import processEml as eml2image
 
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
@@ -391,15 +391,6 @@ class DocumentPreview(ServiceBase):
                 # We were able to extract content, perform term detection
                 detections = indicator_detections(extracted_text)
 
-                # Check to see if there's any potential passwords in the extracted text with extra scrutiny
-                # Let's make the assumption that a password in a phishing document is likely to be a weak password
-                # Ref: https://www.bleepingcomputer.com/news/security/virustotal-finds-hidden-malware-phishing-campaign-in-svg-files/amp/
-                password_detections = {
-                    pw for pw in extract_passwords(extracted_text) if len(pw) <= 12 and pw.isupper() and pw.isalnum()
-                }
-                if password_detections:
-                    request.temp_submission_data.setdefault("passwords", []).extend(list(password_detections))
-
                 # Try to extract any images from the page range and run them through OCR
                 for image_path in self.extract_pdf_images(pdf_path, max_pages):
                     d = ocr_detections(image_path)
@@ -432,11 +423,7 @@ class DocumentPreview(ServiceBase):
             # Let's make the assumption that a password in a phishing document is likely to be a weak password
             # Ref: https://www.bleepingcomputer.com/news/security/virustotal-finds-hidden-malware-phishing-campaign-in-svg-files/amp/
             pw_list.update(
-                {
-                    pw
-                    for pw in extract_passwords(extracted_text)
-                    if 4 <= len(pw) <= 12 and pw.isupper() and pw.isalnum()
-                }
+                {pw for pw in extract_passwords(extracted_text) if 4 <= len(pw) <= 12 and pw.isupper() and pw.isalnum()}
             )
 
             if pw_list:

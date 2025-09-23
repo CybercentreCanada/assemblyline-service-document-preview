@@ -8,13 +8,13 @@
         "body": [
           {
             "img": {
-              "description": "Here's the preview for page 0",
-              "name": "page_000.png",
+              "description": "Here's the preview for original page 1",
+              "name": "page_001_original.png",
               "sha256": "0259b9068dffcf2a49353526861d1fb6c4153e0d1467f7e7ab5dce935ee3d0be"
             },
             "thumb": {
-              "description": "Here's the preview for page 0 (thumbnail)",
-              "name": "page_000.png.thumb",
+              "description": "Here's the preview for original page 1 (thumbnail)",
+              "name": "page_001_original.png.thumb",
               "sha256": "095ba259701d8d1dd04aafd51bfac29c46e3da6b544d561d146538bff2788f1d"
             }
           }
@@ -35,11 +35,11 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_000.png",
+        "name": "page_001_original.png",
         "sha256": "0259b9068dffcf2a49353526861d1fb6c4153e0d1467f7e7ab5dce935ee3d0be"
       },
       {
-        "name": "page_000.png.thumb",
+        "name": "page_001_original.png.thumb",
         "sha256": "095ba259701d8d1dd04aafd51bfac29c46e3da6b544d561d146538bff2788f1d"
       }
     ]

@@ -8,14 +8,14 @@
         "body": [
           {
             "img": {
-              "description": "Here's the preview for page 0",
-              "name": "page_000.png",
-              "sha256": "60bca912a7ab0132ac8b18ee37c845f9108f987a28931addbae625538822141d"
+              "description": "Here's the preview for original page 1",
+              "name": "page_001_original.png",
+              "sha256": "f573784d2e587d69276a0c832d770f786288ce59d73f9059dd915a926d6e12d9"
             },
             "thumb": {
-              "description": "Here's the preview for page 0 (thumbnail)",
-              "name": "page_000.png.thumb",
-              "sha256": "0a3c327fe116b872952f57d93ac11dfb787e8e986da9d1d914ee430758d270ef"
+              "description": "Here's the preview for original page 1 (thumbnail)",
+              "name": "page_001_original.png.thumb",
+              "sha256": "d153ae7e64a83b24150101bfd12b757259d9eaa0228b5cbdcb2b081011046067"
             }
           }
         ],
@@ -25,7 +25,16 @@
         "depth": 0,
         "heuristic": null,
         "promote_to": "SCREENSHOT",
-        "tags": {},
+        "tags": {
+          "network": {
+            "email": {
+              "address": [
+                "team@mamahood.app",
+                "Khawla.AlMaazmi@dubaiculture.ae"
+              ]
+            }
+          }
+        },
         "title_text": "Preview Image(s)",
         "zeroize_on_tag_safe": false
       }
@@ -35,18 +44,36 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_000.png.thumb",
-        "sha256": "0a3c327fe116b872952f57d93ac11dfb787e8e986da9d1d914ee430758d270ef"
+        "name": "page_001_original.png.thumb",
+        "sha256": "d153ae7e64a83b24150101bfd12b757259d9eaa0228b5cbdcb2b081011046067"
       },
       {
-        "name": "page_000.png",
-        "sha256": "60bca912a7ab0132ac8b18ee37c845f9108f987a28931addbae625538822141d"
+        "name": "page_001_original.png",
+        "sha256": "f573784d2e587d69276a0c832d770f786288ce59d73f9059dd915a926d6e12d9"
       }
     ]
   },
   "results": {
     "heuristics": [],
-    "tags": {},
-    "temp_submission_data": {}
+    "tags": {
+      "network.email.address": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "Khawla.AlMaazmi@dubaiculture.ae"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "team@mamahood.app"
+        }
+      ]
+    },
+    "temp_submission_data": {
+      "passwords": [
+        "CAUTION",
+        "FREE"
+      ]
+    }
   }
 }

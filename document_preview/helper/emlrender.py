@@ -189,7 +189,7 @@ def processEml(data, output_dir, logger, load_ext_images=False, load_images=Fals
                     break
                 logger.warning(f"Decoding this MIME part returned error: {e}")
 
-    resultImage = os.path.join(output_dir, "output.png")
+    resultImage = os.path.join(output_dir, "output_original-1.png")
     if len(imagesList) > 0:
         images = list(map(Image.open, imagesList))
         combo = appendImages(images)

@@ -9,7 +9,8 @@
 		"dockerfile": "../Dockerfile"
 	},
 	"containerEnv": {
-		"SHELL": "/bin/bash"
+		"SHELL": "/bin/bash",
+		"FULL_SAMPLES_LOCATION": "/opt/al_samples"
 	},
 	"postCreateCommand": "pip install -r tests/requirements.txt",
 	"customizations": {

@@ -8,25 +8,25 @@
         "body": [
           {
             "img": {
-              "description": "Here's the preview for page 0",
-              "name": "page_000.png",
+              "description": "Here's the preview for original page 1",
+              "name": "page_001_original.png",
               "sha256": "1b4c57eba154998ca1e325fdf22121c66668af2c720f0d8a9cb21b606c5440d2"
             },
             "thumb": {
-              "description": "Here's the preview for page 0 (thumbnail)",
-              "name": "page_000.png.thumb",
+              "description": "Here's the preview for original page 1 (thumbnail)",
+              "name": "page_001_original.png.thumb",
               "sha256": "0bf41beb8ecebd000e98040aa50181aff7dff38b33cc8e165e4445cf7b1ecdc5"
             }
           },
           {
             "img": {
-              "description": "Here's the preview for page 1",
-              "name": "page_001.png",
+              "description": "Here's the preview for original page 2",
+              "name": "page_002_original.png",
               "sha256": "367b7a36301dc8d66ec39081c5624fd6220e7d54f18a6a8b4e32d3788b2e350b"
             },
             "thumb": {
-              "description": "Here's the preview for page 1 (thumbnail)",
-              "name": "page_001.png.thumb",
+              "description": "Here's the preview for original page 2 (thumbnail)",
+              "name": "page_002_original.png.thumb",
               "sha256": "cc5d7a236c69d8200cc33853acd37a2c8f7dc0cc8f32777d3ff558470071cd38"
             }
           }
@@ -61,19 +61,19 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_000.png.thumb",
+        "name": "page_001_original.png.thumb",
         "sha256": "0bf41beb8ecebd000e98040aa50181aff7dff38b33cc8e165e4445cf7b1ecdc5"
       },
       {
-        "name": "page_000.png",
+        "name": "page_001_original.png",
         "sha256": "1b4c57eba154998ca1e325fdf22121c66668af2c720f0d8a9cb21b606c5440d2"
       },
       {
-        "name": "page_001.png",
+        "name": "page_002_original.png",
         "sha256": "367b7a36301dc8d66ec39081c5624fd6220e7d54f18a6a8b4e32d3788b2e350b"
       },
       {
-        "name": "page_001.png.thumb",
+        "name": "page_002_original.png.thumb",
         "sha256": "cc5d7a236c69d8200cc33853acd37a2c8f7dc0cc8f32777d3ff558470071cd38"
       }
     ]
@@ -101,6 +101,17 @@
         }
       ]
     },
-    "temp_submission_data": {}
+    "temp_submission_data": {
+      "passwords": [
+        "202411USA020155US",
+        "DEC",
+        "DOB",
+        "FDA",
+        "HIPAA",
+        "MFPM",
+        "OCT",
+        "SOLIRIS"
+      ]
+    }
   }
 }

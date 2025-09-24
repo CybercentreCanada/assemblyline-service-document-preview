@@ -8,37 +8,37 @@
         "body": [
           {
             "img": {
-              "description": "Here's the preview for page 0",
-              "name": "page_000.png",
+              "description": "Here's the preview for original page 1",
+              "name": "page_001_original.png",
               "sha256": "35ae3b9b6477ab2d6a5e0f8a2d1db1b8c7780d6df7b1d2f1f67acbb8f8f57ab0"
             },
             "thumb": {
-              "description": "Here's the preview for page 0 (thumbnail)",
-              "name": "page_000.png.thumb",
+              "description": "Here's the preview for original page 1 (thumbnail)",
+              "name": "page_001_original.png.thumb",
               "sha256": "0168b9e6b7d58d1a203531e2bd4dd84b90bd6205aaf766ece364ab7dc7869957"
             }
           },
           {
             "img": {
-              "description": "Here's the preview for page 1",
-              "name": "page_001.png",
+              "description": "Here's the preview for original page 2",
+              "name": "page_002_original.png",
               "sha256": "b6d9ac977aa4b7f3309fc47b8bd211e0c769c03bd468e138770c05b3da67f1ac"
             },
             "thumb": {
-              "description": "Here's the preview for page 1 (thumbnail)",
-              "name": "page_001.png.thumb",
+              "description": "Here's the preview for original page 2 (thumbnail)",
+              "name": "page_002_original.png.thumb",
               "sha256": "bb2b2f7dc95d5543db3f7f1dd05bf09764ebc7bbe3c9d726be9116be16f68b58"
             }
           },
           {
             "img": {
-              "description": "Here's the preview for page 2",
-              "name": "page_002.png",
+              "description": "Here's the preview for original page 3",
+              "name": "page_003_original.png",
               "sha256": "f53a48cbbbecebb94680fb8d63bf1d230ed4cb1a62c3f2b0a0f1105a07d81896"
             },
             "thumb": {
-              "description": "Here's the preview for page 2 (thumbnail)",
-              "name": "page_002.png.thumb",
+              "description": "Here's the preview for original page 3 (thumbnail)",
+              "name": "page_003_original.png.thumb",
               "sha256": "9a5619e2f72daaec7f56f552aa5d3cff336442388dcbf20cbd559872e4f4d07a"
             }
           }
@@ -59,27 +59,27 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_000.png.thumb",
+        "name": "page_001_original.png.thumb",
         "sha256": "0168b9e6b7d58d1a203531e2bd4dd84b90bd6205aaf766ece364ab7dc7869957"
       },
       {
-        "name": "page_000.png",
+        "name": "page_001_original.png",
         "sha256": "35ae3b9b6477ab2d6a5e0f8a2d1db1b8c7780d6df7b1d2f1f67acbb8f8f57ab0"
       },
       {
-        "name": "page_002.png.thumb",
+        "name": "page_003_original.png.thumb",
         "sha256": "9a5619e2f72daaec7f56f552aa5d3cff336442388dcbf20cbd559872e4f4d07a"
       },
       {
-        "name": "page_001.png",
+        "name": "page_002_original.png",
         "sha256": "b6d9ac977aa4b7f3309fc47b8bd211e0c769c03bd468e138770c05b3da67f1ac"
       },
       {
-        "name": "page_001.png.thumb",
+        "name": "page_002_original.png.thumb",
         "sha256": "bb2b2f7dc95d5543db3f7f1dd05bf09764ebc7bbe3c9d726be9116be16f68b58"
       },
       {
-        "name": "page_002.png",
+        "name": "page_003_original.png",
         "sha256": "f53a48cbbbecebb94680fb8d63bf1d230ed4cb1a62c3f2b0a0f1105a07d81896"
       }
     ]
@@ -87,6 +87,41 @@
   "results": {
     "heuristics": [],
     "tags": {},
-    "temp_submission_data": {}
+    "temp_submission_data": {
+      "passwords": [
+        "\u00d1\u0152\u00d1",
+        "\u00d1\u0152\u011e\u00bd\u011e",
+        "\u00d1\u0152\u011e\u00be\u00d1",
+        "\u00d1\u0152\u011e\u00be\u011e",
+        "\u011e\u00b2\u00d1",
+        "\u011e\u00b2\u011e",
+        "\u011e\u00bc\u00d1",
+        "\u011e\u00bc\u011e",
+        "\u011e\u00bc\u011e\u00bd\u011e\u00be",
+        "\u011e\u00bc\u011e\u00be\u011e",
+        "\u011e\u00bd\u00d1",
+        "\u011e\u00bd\u011e",
+        "\u011e\u00bd\u011e\u00bd\u00d1",
+        "\u011e\u00bd\u011e\u00be",
+        "\u011e\u00bd\u011e\u00be\u00d1",
+        "\u011e\u00bd\u011e\u00be\u011e\u00b2\u011e\u00be\u00d1",
+        "\u011e\u00be\u00d1",
+        "\u011e\u00be\u011e",
+        "\u011e\u00be\u011e\u00b2\u00d1",
+        "\u011e\u00be\u011e\u00b2\u011e",
+        "\u011e\u00be\u011e\u00b2\u011e\u00bd\u011e\u00be",
+        "\u011e\u00be\u011e\u00b2\u011e\u00bd\u011e\u00be\u011e\u00b2\u011e",
+        "\u011e\u00be\u011e\u00b2\u011e\u00be\u00d1",
+        "\u011e\u00be\u011e\u00b2\u011e\u00be\u011e",
+        "\u011e\u00be\u011e\u00bc",
+        "\u011e\u00be\u011e\u00bc\u011e",
+        "\u011e\u00be\u011e\u00bc\u011e\u00be\u00d1",
+        "\u011e\u00be\u011e\u00bd",
+        "\u011e\u00be\u011e\u00bd\u011e\u00bd\u00d1",
+        "\u011e\u0178\u00d1",
+        "\u011e\u0178\u011e",
+        "\u011e\u0178\u011e\u00be\u00d1"
+      ]
+    }
   }
 }

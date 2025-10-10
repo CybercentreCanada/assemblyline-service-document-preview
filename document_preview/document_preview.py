@@ -2,6 +2,7 @@ import os
 import subprocess
 import tempfile
 from base64 import b64decode, b64encode
+from hashlib import sha256
 from io import StringIO
 from time import time
 from typing import List, Optional, Tuple
@@ -339,6 +340,7 @@ class DocumentPreview(ServiceBase):
         image_section = ResultImageSection(request, "Preview Image(s)")
         run_ocr_on_first_n_pages = request.get_param("run_ocr_on_first_n_pages")
         previews = [s for s in os.listdir(self.working_directory) if "output" in s]
+        preview_hashes = []
 
         if not previews:
             # No previews found, unable to proceed
@@ -348,6 +350,14 @@ class DocumentPreview(ServiceBase):
         def attach_images_to_section(run_ocr=False) -> str:
             extracted_text = ""
             for i, preview in enumerate(natsorted(previews)):
+                with open(os.path.join(self.working_directory, preview), "rb") as f:
+                    preview_hash = sha256(f.read()).hexdigest()
+                    if preview_hash in preview_hashes:
+                        # We've already added this image, skip it
+                        continue
+                    else:
+                        preview_hashes.append(preview_hash)
+
                 ocr_heur_id, ocr_io = None, None
                 if run_ocr:
                     # Trigger OCR on the first N pages as specified in the submission

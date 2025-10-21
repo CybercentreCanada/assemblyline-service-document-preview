@@ -279,10 +279,11 @@ class DocumentPreview(ServiceBase):
                     tmp.seek(0)
                     file_contents = tmp.read()
             elif request.file_type == "document/email" and (
-                file_contents_peek.index(b"<html") >= 0 or file_contents_peek.index(b"<!doctype html") >= 0
+                b"<html" in file_contents_peek or b"<!doctype html" in file_contents_peek
             ):
                 # We're dealing with an HTML-formatted email
                 return [("original", self.html_render(request.file_contents, max_pages))]
+
             # Render EML as PNG
             # If we have internet access, we'll attempt to load external images
             eml2image(

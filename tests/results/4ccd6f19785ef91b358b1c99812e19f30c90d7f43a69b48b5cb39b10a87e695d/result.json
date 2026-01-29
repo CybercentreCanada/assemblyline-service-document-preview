@@ -17,6 +17,18 @@
               "name": "page_001_original.png.thumb",
               "sha256": "d153ae7e64a83b24150101bfd12b757259d9eaa0228b5cbdcb2b081011046067"
             }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for styleless page 1",
+              "name": "page_001_styleless.png",
+              "sha256": "fb7b68b47f7f8002cca2a91aca2eb42b4bb641de9938bba612148b57214efc2b"
+            },
+            "thumb": {
+              "description": "Here's the preview for styleless page 1 (thumbnail)",
+              "name": "page_001_styleless.png.thumb",
+              "sha256": "b8534cc735201bd0f2c0cf386991684882be6f1edb5f2d5ff39f7310bf89ec26"
+            }
           }
         ],
         "body_config": {},
@@ -44,12 +56,20 @@
     "extracted": [],
     "supplementary": [
       {
+        "name": "page_001_styleless.png.thumb",
+        "sha256": "b8534cc735201bd0f2c0cf386991684882be6f1edb5f2d5ff39f7310bf89ec26"
+      },
+      {
         "name": "page_001_original.png.thumb",
         "sha256": "d153ae7e64a83b24150101bfd12b757259d9eaa0228b5cbdcb2b081011046067"
       },
       {
         "name": "page_001_original.png",
         "sha256": "f573784d2e587d69276a0c832d770f786288ce59d73f9059dd915a926d6e12d9"
+      },
+      {
+        "name": "page_001_styleless.png",
+        "sha256": "fb7b68b47f7f8002cca2a91aca2eb42b4bb641de9938bba612148b57214efc2b"
       }
     ]
   },

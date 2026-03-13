@@ -323,7 +323,7 @@ class DocumentPreview(ServiceBase):
         max_pages = int(request.get_param("max_pages_rendered"))
         save_ocr_output = request.get_param("save_ocr_output").lower()
         try:
-            pdf_paths = self.render_documents(request, max_pages)
+            pdf_paths = [(ctx, path) for ctx, path in self.render_documents(request, max_pages) if path]
             if pdf_paths:
                 # Convert PDF to images for ImageSection
                 for context, pdf_path in pdf_paths:

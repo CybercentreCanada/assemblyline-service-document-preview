@@ -7,3 +7,6 @@ tesseract-ocr
 unzip
 wget
 wkhtmltopdf
+
+# Used for decoding QR codes
+zbar-tools

@@ -3,7 +3,7 @@ assemblyline-v4-service
 compoundfiles
 compressed_rtf
 imgkit
-multidecoder
+multidecoder==1.6.24
 natsort
 pandas
 Pillow==10.3.0

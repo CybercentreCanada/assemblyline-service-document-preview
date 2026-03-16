@@ -512,7 +512,7 @@ class DocumentPreview(ServiceBase):
                             image_section.add_tag("network.static.uri", code_value)
                         else:
                             # Write data to file
-                            with NamedTemporaryFile(delete=False, mode="w") as fh:
+                            with NamedTemporaryFile(dir=self.working_directory, delete=False, mode="w") as fh:
                                 fh.write(code_value)
 
                             request.add_extracted(

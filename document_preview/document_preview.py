@@ -1,9 +1,11 @@
 import os
+import re
 import subprocess
 import tempfile
 from base64 import b64decode, b64encode
 from hashlib import sha256
 from io import StringIO
+from tempfile import NamedTemporaryFile
 from time import time
 from typing import List, Optional, Tuple
 from zipfile import BadZipFile, ZipFile
@@ -11,6 +13,7 @@ from zipfile import BadZipFile, ZipFile
 import pandas
 from assemblyline.common import forge
 from assemblyline.common.exceptions import RecoverableError
+from assemblyline.odm.base import FULL_URI
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
 from assemblyline_v4_service.common.ocr import ocr_detections
@@ -28,6 +31,7 @@ from bs4 import BeautifulSoup
 from documentbuilder.docbuilder import CDocBuilder
 from multidecoder.decoders.network import find_emails, find_urls
 from natsort import natsorted
+from PIL import Image, ImageOps
 from selenium.common.exceptions import NoAlertPresentException, WebDriverException
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
@@ -315,6 +319,29 @@ class DocumentPreview(ServiceBase):
         [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]
         [section.add_tag("network.static.uri", node.value) for node in find_urls(ocr_content.encode())]
 
+    def scan_for_QR_codes(self, image: Image) -> str:
+        # Try scanning the image as-is for QR codes
+        with NamedTemporaryFile() as tmp_qr:
+            image.save(tmp_qr.name, format="PNG")
+            qr_results = subprocess.run(
+                ["zbarimg", "-q", tmp_qr.name],
+                capture_output=True,
+                text=True,
+            ).stdout.strip()
+
+            if qr_results:
+                # We were able to decode a QR code without any image manipulation, return the result
+                return qr_results
+            else:
+                # Try scanning with a color invert of the image
+                tmp_qr.seek(0)
+                ImageOps.invert(image.convert("RGB")).save(tmp_qr.name, format="PNG")
+                return subprocess.run(
+                    ["zbarimg", "-q", tmp_qr.name],
+                    capture_output=True,
+                    text=True,
+                ).stdout.strip()
+
     def execute(self, request):
         start = time()
         result = Result()
@@ -399,7 +426,9 @@ class DocumentPreview(ServiceBase):
             pw_list = set(request.temp_submission_data.get("passwords", []))
             if pdf_paths:
                 for _, pdf_path in pdf_paths:
+                    embedded_image_paths = self.extract_pdf_images(pdf_path, max_pages)
                     extracted_text_path = self.extract_pdf_text(pdf_path, max_pages)
+
                     if extracted_text_path is not None:
                         extracted_text += open(extracted_text_path, "r").read()
                         # Add all images to section
@@ -409,7 +438,7 @@ class DocumentPreview(ServiceBase):
                         detections = indicator_detections(extracted_text)
 
                         # Try to extract any images from the page range and run them through OCR
-                        for image_path in self.extract_pdf_images(pdf_path, max_pages):
+                        for image_path in embedded_image_paths:
                             d = ocr_detections(image_path)
 
                             # Merge indicator detections
@@ -435,6 +464,64 @@ class DocumentPreview(ServiceBase):
                     else:
                         # Unable to extract text from PDF, run it through Tesseract for term detection
                         extracted_text += attach_images_to_section(run_ocr=True)
+
+                    # Check for the presence of any QR codes embedded in the document
+                    embedded_images = [Image.open(image_path) for image_path in embedded_image_paths]
+                    qr_code_detections = []
+                    for index, image in enumerate(embedded_images):
+                        ratio = image.size[0] / image.size[1]
+                        if image.size[0] == image.size[1]:
+                            # Image is a perfect square, let's check if it's a QR code
+                            qr_result = self.scan_for_QR_codes(image)
+                            if qr_result:
+                                qr_code_detections.append(qr_result)
+
+                        # Check if the ratio between the height and width is 1:2 or vice-versa
+                        # This could be a technique to deter tools that scan images in a document for QR codes,
+                        elif ratio in [0.5, 2.0]:
+                            # Image has a 1:2 or 2:1 ratio, let's check if we can find their other half
+
+                            # Make sure we're not going out of bounds of the embedded images when looking for the other half
+                            if index + 1 >= len(embedded_images):
+                                continue
+
+                            for other_half in embedded_images[index + 1 :]:
+                                if image.size == other_half.size:
+                                    # We found the other half, let's combine them and check if it's a QR code
+                                    size = max(image.size[0], image.size[1])
+                                    combined_image = Image.new("RGB", (size, size))
+                                    if ratio == 0.5:
+                                        # Image is taller than it is wider, stack them side-by-side
+                                        combined_image.paste(image, (0, 0))
+                                        combined_image.paste(other_half, (image.size[0], 0))
+                                    else:
+                                        # Image is wider than it is taller, stack them top-to-bottom
+                                        combined_image.paste(image, (0, 0))
+                                        combined_image.paste(other_half, (0, image.size[1]))
+
+                                    qr_result = self.scan_for_QR_codes(combined_image)
+                                    if qr_result:
+                                        qr_code_detections.append(qr_result)
+                                    break
+
+                    # If there are QR code detections, include it as part of the output
+                    for i, detection in enumerate(qr_code_detections):
+                        code_type, code_value = detection.split(":", 1)
+                        if re.match(FULL_URI, code_value):
+                            # Tag URI
+                            image_section.add_tag("network.static.uri", code_value)
+                        else:
+                            # Write data to file
+                            with NamedTemporaryFile(dir=self.working_directory, delete=False, mode="w") as fh:
+                                fh.write(code_value)
+
+                            request.add_extracted(
+                                fh.name,
+                                name=f"embedded_code_{i}",
+                                description=f"Decoded {code_type} content",
+                                safelist_interface=self.api_interface,
+                            )
+
             else:
                 # Extract text via OCR for non-PDF documents (images)
                 attach_images_to_section(run_ocr=True)

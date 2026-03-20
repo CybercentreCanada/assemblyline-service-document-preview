@@ -393,11 +393,30 @@ class DocumentPreview(ServiceBase):
                     ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
                     ocr_io = StringIO()
 
-                context, pg_no = preview[7:].split("-")
-                pg_no = pg_no[:-4]
-
-                img_name = f"page_{pg_no.zfill(3)}_{context}.png"
                 fp = os.path.join(self.working_directory, preview)
+                context, pg_no = preview[7:].split("-")
+                pg_no = pg_no[:-4].zfill(3)
+
+                # Analyze the preview to check if there's any QR code we can extract from it
+                qr_result = self.scan_for_QR_codes(Image.open(fp))
+                if qr_result:
+                    code_type, code_value = qr_result.split(":", 1)
+                    if re.match(FULL_URI, code_value):
+                        # Tag URI
+                        image_section.add_tag("network.static.uri", code_value)
+                    else:
+                        # Write data to file
+                        with NamedTemporaryFile(dir=self.working_directory, delete=False, mode="w") as fh:
+                            fh.write(code_value)
+
+                        request.add_extracted(
+                            fh.name,
+                            name=f"embedded_code_page_{pg_no}_{context}",
+                            description=f"Decoded {code_type} content on page {pg_no}",
+                            safelist_interface=self.api_interface,
+                        )
+
+                img_name = f"page_{pg_no}_{context}.png"
                 image_section.add_image(
                     fp,
                     name=img_name,

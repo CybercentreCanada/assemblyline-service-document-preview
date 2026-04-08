@@ -8,12 +8,12 @@
         "body": [
           {
             "img": {
-              "description": "Here's the preview for original page 1",
+              "description": "Here's the preview for original page 001",
               "name": "page_001_original.png",
               "sha256": "fc8164bd3b412dd2b1b816dd131b55c1b157dc00ef840d3488780418530f843f"
             },
             "thumb": {
-              "description": "Here's the preview for original page 1 (thumbnail)",
+              "description": "Here's the preview for original page 001 (thumbnail)",
               "name": "page_001_original.png.thumb",
               "sha256": "744179b5e80c58ce4aaf33d52dac3abe1236574c3401d7971ee32aa91160e6d1"
             }

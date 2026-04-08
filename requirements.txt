@@ -10,3 +10,4 @@ Pillow==12.1.1
 pytesseract
 selenium
 XlsxWriter
+eml2pdf

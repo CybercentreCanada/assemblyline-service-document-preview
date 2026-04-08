@@ -1,12 +1,9 @@
 calibre
 libemail-address-perl
 libemail-outlook-message-perl
-libgdiplus
-poppler-utils
 tesseract-ocr
 unzip
 wget
-wkhtmltopdf
 
 # Used for decoding QR codes
 zbar-tools

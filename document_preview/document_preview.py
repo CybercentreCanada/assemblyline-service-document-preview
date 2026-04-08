@@ -1,3 +1,6 @@
+"""Main service module."""
+
+import email
 import os
 import re
 import subprocess
@@ -7,7 +10,6 @@ from hashlib import sha256
 from io import StringIO
 from tempfile import NamedTemporaryFile
 from time import time
-from typing import List, Optional, Tuple
 from zipfile import BadZipFile, ZipFile
 
 import pandas
@@ -29,6 +31,7 @@ from assemblyline_v4_service.common.result import (
 from assemblyline_v4_service.common.utils import extract_passwords
 from bs4 import BeautifulSoup
 from documentbuilder.docbuilder import CDocBuilder
+from eml2pdf.libeml2pdf import Header, walk_eml
 from multidecoder.decoders.network import find_emails, find_urls
 from natsort import natsorted
 from PIL import Image, ImageOps
@@ -36,15 +39,61 @@ from selenium.common.exceptions import NoAlertPresentException, WebDriverExcepti
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 
-from document_preview.helper.emlrender import processEml as eml2image
-
 PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
 
 
+def eml2html(file_contents: bytes) -> str:
+    """Convert an EML file to HTML format.
+
+    This is derived from the eml2pdf's `processs_eml` function but omits attachment handling since we're only
+    interested in rendering the email body for previewing.
+
+    Args:
+        file_contents (bytes): The content of the EML document.
+
+    Returns:
+        str: The HTML content as a string.
+
+    """
+    # Open and parse the .eml file
+    msg = email.message_from_bytes(file_contents)
+
+    email_header = Header(msg, "<in-memory>")
+    html_content, _ = walk_eml(msg, "<in-memory>")
+
+    if html_content and isinstance(html_content, str):
+        # Add UTF-8 meta tag and email header if not present
+        return f"""
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    {email_header.html}
+    <hr>
+    {html_content}
+    """
+
+
 def pdfinfo_from_path(fp: str):
+    """Extract PDF metadata information using the `pdfinfo` command-line tool.
+
+    Args:
+        fp (str): The file path to the PDF document.
+
+    Returns:
+        dict: A dictionary containing the PDF metadata information, where keys are the metadata fields and values are
+        their corresponding values.
+
+    """
     pdfinfo = {}
-    for info in subprocess.run(["pdfinfo", fp], capture_output=True).stdout.strip().decode().split("\n"):
+    for info in (
+        subprocess.run(
+            ["pdfinfo", fp],
+            capture_output=True,
+        )
+        .stdout.strip()
+        .decode()
+        .split("\n")
+    ):
         k, v = info.split(":", 1)
         # Clean up spacing
         v = v.lstrip()
@@ -52,7 +101,19 @@ def pdfinfo_from_path(fp: str):
     return pdfinfo
 
 
-def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=None, context="original"):
+def convert_from_path(
+    fp: str, output_directory: str, first_page: int = 1, last_page: int | None = None, context: str = "original"
+) -> None:
+    """Convert PDF to images using the `pdftoppm` command-line tool.
+
+    Args:
+        fp (str): The file path to the PDF document.
+        output_directory (str): The directory where the output images will be saved.
+        first_page (int, optional): The first page to convert. Defaults to 1.
+        last_page (int, optional): The last page to convert. Defaults to None, which means all pages.
+        context (str, optional): A context string to include in the output file names. Defaults to "original".
+
+    """
     pdf_conv_command = ["pdftoppm", "-r", PDFTOPPM_DPI, "-png", "-f", str(first_page)]
     if last_page:
         pdf_conv_command += ["-l", str(last_page)]
@@ -63,8 +124,11 @@ def convert_from_path(fp: str, output_directory: str, first_page=1, last_page=No
 
 
 class DocumentPreview(ServiceBase):
+    """Service to render document previews and extract text/images from documents."""
+
     def __init__(self, config=None):
-        super(DocumentPreview, self).__init__(config)
+        """Initialize the DocumentPreview service."""
+        super().__init__(config)
         browser_options = ChromeOptions()
 
         # Set brower options depending on service configuration
@@ -81,12 +145,23 @@ class DocumentPreview(ServiceBase):
         self.browser.set_window_size(1080, 1920)
 
     def start(self):
+        """Start the DocumentPreview service."""
         self.log.debug("Document preview service started")
 
     def stop(self):
+        """Stop the DocumentPreview service."""
         self.log.debug("Document preview service ended")
 
     def extract_pdf_text(self, path: str, max_pages: int) -> str:
+        """Extract text from a PDF document.
+
+        Args:
+            path (str): The path to the PDF document.
+            max_pages (int): The maximum number of pages to extract.
+
+        Returns:
+            str: The path to the extracted text file.
+        """
         output_path = os.path.join(self.working_directory, "extracted_text")
         subprocess.run(
             ["pdftotext", "-f", "1", "-l", str(max_pages), path, output_path],
@@ -96,7 +171,16 @@ class DocumentPreview(ServiceBase):
         if os.path.exists(output_path):
             return output_path
 
-    def extract_pdf_images(self, path: str, max_pages: int) -> List[str]:
+    def extract_pdf_images(self, path: str, max_pages: int) -> list[str]:
+        """Extract images from a PDF document.
+
+        Args:
+            path (str): The path to the PDF document.
+            max_pages (int): The maximum number of pages to extract.
+
+        Returns:
+            list[str]: A list of paths to the extracted image files.
+        """
         output_path_prefix = os.path.join(self.working_directory, "extracted_image")
         subprocess.run(
             [
@@ -118,7 +202,16 @@ class DocumentPreview(ServiceBase):
             if f.startswith("extracted_image")
         ]
 
-    def ebook_conversion(self, request: Request):
+    def ebook_conversion(self, request: Request) -> None | str:
+        """Convert eBooks (EPUB/MOBI) to PDF format using the `ebook-convert` command-line tool.
+
+        Args:
+            request (Request): The service request object containing parameters and file information.
+
+        Returns:
+            str: The path to the converted PDF file, or None if conversion failed.
+
+        """
         ext = request.file_type.replace("document/", "")
         with tempfile.NamedTemporaryFile(suffix=f".{ext}") as tmp:
             tmp.write(request.file_contents)
@@ -134,6 +227,16 @@ class DocumentPreview(ServiceBase):
                 return output_path
 
     def office_conversion(self, file: str, request: Request) -> str:
+        """Convert Office document to PDF and extract any media if possible.
+
+        Args:
+            file (str): The path to the Office document to convert.
+            request (Request): The service request object containing parameters and file information.
+
+        Returns:
+            str: The path to the converted PDF file, or None if conversion failed.
+
+        """
         # Extract all media from the Office document if they're an image
         if request.file_type != "text/csv":
             try:
@@ -183,7 +286,16 @@ class DocumentPreview(ServiceBase):
         if os.path.exists(output_path):
             return output_path
 
-    def html_render(self, file_contents, max_pages=1) -> str:
+    def html_render(self, file_contents: bytes, max_pages: int = 1) -> None | str:
+        """Render HTML content in a browser and save as PDF.
+
+        Args:
+            file_contents (bytes): The HTML content to render.
+            max_pages (int): The maximum number of pages to render.
+
+        Returns:
+            None | str: The path to the rendered PDF file, or None if rendering failed.
+        """
         if b"window.location.href = " in file_contents:
             # Document contains code that will cause a redirect, something we likely can't follow
             return
@@ -229,9 +341,26 @@ class DocumentPreview(ServiceBase):
                     self.browser.switch_to.window(self.browser.window_handles[-1])
 
     def pdf_to_images(self, file, max_pages=None, context="original"):
+        """Convert PDF to images for previewing.
+
+        Args:
+            file (str): The path to the PDF file.
+            max_pages (int, optional): The maximum number of pages to convert. Defaults to None.
+            context (str, optional): The context for the conversion. Defaults to "original".
+        """
         convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages, context=context)
 
-    def render_documents(self, request: Request, max_pages=1) -> Optional[List[Tuple[str, str]]]:
+    def render_documents(self, request: Request, max_pages=1) -> list[tuple[str, str]] | None:
+        """Render documents based on their file type.
+
+        Args:
+            request (Request): The request object containing file information.
+            max_pages (int, optional): The maximum number of pages to render. Defaults to 1.
+
+        Returns:
+            list[tuple[str, str]] | None: A list of tuples containing the context and path to the rendered PDF,
+            or None if rendering failed.
+        """
         # Word/Excel/Powerpoint/RTF/ODT
         if request.file_type.startswith("document/odt") or any(
             request.file_type == f"document/office/{ms_product}"
@@ -290,13 +419,7 @@ class DocumentPreview(ServiceBase):
 
             # Render EML as PNG
             # If we have internet access, we'll attempt to load external images
-            eml2image(
-                file_contents,
-                self.working_directory,
-                self.log,
-                load_ext_images=False,
-                load_images=request.get_param("load_email_images"),
-            )
+            return [("original", self.html_render(eml2html(file_contents).encode(), max_pages))]
         # HTML
         elif request.file_type == "code/html":
             # Render the original HTML first
@@ -316,10 +439,24 @@ class DocumentPreview(ServiceBase):
             return pdf_files
 
     def tag_network_iocs(self, section: ResultSection, ocr_content: str) -> None:
+        """Tag any network IOCs found in OCR output.
+
+        Args:
+            section (ResultSection): The result section to add tags to.
+            ocr_content (str): The OCR-extracted text content to scan for IOCs.
+        """
         [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]
         [section.add_tag("network.static.uri", node.value) for node in find_urls(ocr_content.encode())]
 
     def scan_for_QR_codes(self, image: Image) -> str:
+        """Scan the given image for QR codes and return the decoded content if found.
+
+        Args:
+            image (Image): The image to scan for QR codes.
+
+        Returns:
+            str: The decoded content of the QR code if found, otherwise an empty string.
+        """
         # Try scanning the image as-is for QR codes
         with NamedTemporaryFile() as tmp_qr:
             image.save(tmp_qr.name, format="PNG")
@@ -343,6 +480,14 @@ class DocumentPreview(ServiceBase):
                 ).stdout.strip()
 
     def execute(self, request):
+        """Main execution point for the service.
+
+        Args:
+            request (Request): The service request object containing parameters and file information.
+
+        Raises:
+            RecoverableError: If an error occurs during processing that should trigger a retry of the analysis.
+        """
         start = time()
         result = Result()
 
@@ -356,7 +501,7 @@ class DocumentPreview(ServiceBase):
                 # Convert PDF to images for ImageSection
                 for context, pdf_path in pdf_paths:
                     self.pdf_to_images(pdf_path, max_pages, context=context)
-        except Exception as e:
+        except Exception as e:  # noqa: BLE001
             # If we run into an error with no message, raise as a recoverable error to try again
             if not str(e):
                 raise RecoverableError("No explicit error message provided, retrying analysis..")
@@ -449,7 +594,8 @@ class DocumentPreview(ServiceBase):
                     extracted_text_path = self.extract_pdf_text(pdf_path, max_pages)
 
                     if extracted_text_path is not None:
-                        extracted_text += open(extracted_text_path, "r").read()
+                        with open(extracted_text_path, "r") as fh:
+                            extracted_text += fh.read()
                         # Add all images to section
                         attach_images_to_section()
 
@@ -500,7 +646,8 @@ class DocumentPreview(ServiceBase):
                         elif ratio in [0.5, 2.0]:
                             # Image has a 1:2 or 2:1 ratio, let's check if we can find their other half
 
-                            # Make sure we're not going out of bounds of the embedded images when looking for the other half
+                            # Make sure we're not going out of bounds of the embedded images
+                            # when looking for the other half
                             if index + 1 >= len(embedded_images):
                                 continue
 
@@ -567,11 +714,11 @@ class DocumentPreview(ServiceBase):
                     extracted_text_fh.flush()
 
                     # Write content to disk to be uploaded
-                    add_params = dict(
-                        path=extracted_text_fh.name,
-                        name="ocr_output_dump",
-                        description="OCR Output",
-                    )
+                    add_params = {
+                        "path": extracted_text_fh.name,
+                        "name": "ocr_output_dump",
+                        "description": "OCR Output",
+                    }
                     if save_ocr_output == "as_extracted":
                         request.add_extracted(**add_params)
                     elif save_ocr_output == "as_supplementary":
@@ -590,7 +737,7 @@ class DocumentPreview(ServiceBase):
                             heuristic=Heuristic(2),
                             parent=result,
                         )
-                except Exception:
+                except Exception:  # noqa: BLE001, S110
                     # There was a problem fetching the page count from the PDF, move on..
                     pass
         image_section.promote_as_screenshot()

@@ -8,14 +8,14 @@
         "body": [
           {
             "img": {
-              "description": "Here's the preview for original page 1",
+              "description": "Here's the preview for original page 001",
               "name": "page_001_original.png",
-              "sha256": "ceb1b28ebdcb9852e9aee2f71d1c56427e4a31893fedc229d6288d7a6dbd0a55"
+              "sha256": "d8ce2247911b9cf08faaa1ed211e3f1f398089c9b37d3ab5a69bd986f4fde31e"
             },
             "thumb": {
-              "description": "Here's the preview for original page 1 (thumbnail)",
+              "description": "Here's the preview for original page 001 (thumbnail)",
               "name": "page_001_original.png.thumb",
-              "sha256": "dfdcd849669b37ddeb72512659afa75fec2906e3bde2137cf2b8e1709724d2a6"
+              "sha256": "2c73f0d8a7b15260ac87940bc0e4dfd4e655b35ba085fa7a0665f8a24c2bc228"
             }
           }
         ],
@@ -25,7 +25,20 @@
         "depth": 0,
         "heuristic": null,
         "promote_to": "SCREENSHOT",
-        "tags": {},
+        "tags": {
+          "network": {
+            "email": {
+              "address": [
+                "fondosura@sura.com.co"
+              ]
+            },
+            "static": {
+              "uri": [
+                "https://forms.office.com/Pages/ResponsePage.aspx?"
+              ]
+            }
+          }
+        },
         "title_text": "Preview Image(s)",
         "zeroize_on_tag_safe": false
       }
@@ -35,18 +48,33 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_001_original.png",
-        "sha256": "ceb1b28ebdcb9852e9aee2f71d1c56427e4a31893fedc229d6288d7a6dbd0a55"
+        "name": "page_001_original.png.thumb",
+        "sha256": "2c73f0d8a7b15260ac87940bc0e4dfd4e655b35ba085fa7a0665f8a24c2bc228"
       },
       {
-        "name": "page_001_original.png.thumb",
-        "sha256": "dfdcd849669b37ddeb72512659afa75fec2906e3bde2137cf2b8e1709724d2a6"
+        "name": "page_001_original.png",
+        "sha256": "d8ce2247911b9cf08faaa1ed211e3f1f398089c9b37d3ab5a69bd986f4fde31e"
       }
     ]
   },
   "results": {
     "heuristics": [],
-    "tags": {},
+    "tags": {
+      "network.email.address": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "fondosura@sura.com.co"
+        }
+      ],
+      "network.static.uri": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://forms.office.com/Pages/ResponsePage.aspx?"
+        }
+      ]
+    },
     "temp_submission_data": {}
   }
 }

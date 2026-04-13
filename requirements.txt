@@ -6,7 +6,7 @@ imgkit
 multidecoder==1.6.24
 natsort
 pandas
-Pillow==12.1.1
+Pillow==12.2.0
 pytesseract
 selenium
 XlsxWriter

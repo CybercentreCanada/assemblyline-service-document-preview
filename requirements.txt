@@ -1,7 +1,5 @@
 assemblyline
 assemblyline-v4-service
-compoundfiles
-compressed_rtf
 multidecoder==1.6.24
 natsort
 pandas

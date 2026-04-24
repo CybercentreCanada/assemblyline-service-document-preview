@@ -44,6 +44,9 @@ from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 PDF_DPI = int(os.environ.get("PDF_DPI", 150))
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
 
+# Ignore default max image pixels limit imposed by Pillow
+Image.MAX_IMAGE_PIXELS = None
+
 
 @functools.lru_cache(maxsize=32)
 def _read_file_bytes(fp: str) -> bytes:

@@ -40,7 +40,6 @@ from natsort import natsorted
 from PIL import Image, ImageOps
 from selenium.common.exceptions import NoAlertPresentException, WebDriverException
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
-from selenium.webdriver.common.print_page_options import PrintOptions
 
 PDF_DPI = int(os.environ.get("PDF_DPI", 150))
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
@@ -325,13 +324,9 @@ class DocumentPreview(ServiceBase):
             return
 
         with tempfile.NamedTemporaryFile(suffix=".pdf", delete=False) as tmp_pdf:
-            # Load base64'd HTML contents directly into new window of browser
-            self.browser.switch_to.new_window()
+            # Load base64'd HTML contents directly into new tab
+            self.browser.switch_to.new_window("tab")
             self.browser.get(f"data:text/html;base64,{b64encode(file_contents).decode()}")
-
-            # Execute command and save PDF content to disk for image conversion
-            print_opt = PrintOptions()
-            print_opt.page_ranges = [1, max_pages]
 
             # Check to see if there's an alert raised on page load
             try:
@@ -344,8 +339,25 @@ class DocumentPreview(ServiceBase):
                 pass
 
             try:
-                tmp_pdf.write(b64decode(self.browser.print_page(print_opt)))
-                tmp_pdf.flush()
+                # Use Chrome's Developer Protocol directly
+                result = self.browser.execute_cdp_cmd(
+                    "Page.printToPDF",
+                    {
+                        "pageRanges": f"1-{max_pages}",
+                        "printBackground": True,
+                        "transferMode": "ReturnAsStream",
+                    },
+                )
+
+                # Read the PDF stream in chunks and write to file
+                stream_handle = result["stream"]
+                while True:
+                    chunk = self.browser.execute_cdp_cmd("IO.read", {"handle": stream_handle, "size": 65536})
+                    tmp_pdf.write(b64decode(chunk["data"]) if chunk.get("base64Encoded") else chunk["data"].encode())
+                    if chunk.get("eof"):
+                        # We've reached the end of the stream
+                        break
+                self.browser.execute_cdp_cmd("IO.close", {"handle": stream_handle})
                 return tmp_pdf.name
             except WebDriverException:
                 # We aren't able to print the page to PDF, take a screenshot instead
@@ -448,18 +460,22 @@ class DocumentPreview(ServiceBase):
         elif request.file_type == "code/html":
             # Render the original HTML first
             pdf_files = []
+            bsoup = BeautifulSoup(request.file_contents, "html.parser")
             pdf_files.append(("original", self.html_render(request.file_contents, max_pages)))
 
             # Render the HTML with scripts removed
-            bsoup = BeautifulSoup(request.file_contents, "html.parser")
-            [s.extract() for s in bsoup("script")]
-            scriptless_html = str(bsoup).encode()
-            pdf_files.append(("scriptless", self.html_render(scriptless_html, max_pages)))
+            has_scripts = bool(bsoup("script"))
+            if has_scripts:
+                [s.extract() for s in bsoup("script")]
+                scriptless_html = str(bsoup).encode()
+                pdf_files.append(("scriptless", self.html_render(scriptless_html, max_pages)))
 
             # Render the HTML with styling removed (we'll use this version for OCR)
-            [s.extract() for s in bsoup("style")]
-            styleless_html = str(bsoup).encode()
-            pdf_files.append(("styleless", self.html_render(styleless_html, max_pages)))
+            has_styles = bool(bsoup("style"))
+            if has_styles:
+                [s.extract() for s in bsoup("style")]
+                styleless_html = str(bsoup).encode()
+                pdf_files.append(("styleless", self.html_render(styleless_html, max_pages)))
             return pdf_files
 
     def tag_network_iocs(self, section: ResultSection, ocr_content: str) -> None:

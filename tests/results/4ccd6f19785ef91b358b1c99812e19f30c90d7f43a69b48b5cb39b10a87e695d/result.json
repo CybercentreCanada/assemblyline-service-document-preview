@@ -10,24 +10,60 @@
             "img": {
               "description": "Here's the preview for original page 001",
               "name": "page_001_original.png",
-              "sha256": "2aa0d3cd240b43b78c466dcf8f8eba3d7e0638f22b29f5c7fcb9cc08f7509192"
+              "sha256": "a52d606e1ec2873c797c44085ce0f8f5ad7477b25a52bf52bc2959ccc48a1d46"
             },
             "thumb": {
               "description": "Here's the preview for original page 001 (thumbnail)",
               "name": "page_001_original.png.thumb",
-              "sha256": "020b831972d81659caea4ba95f0e0cb7c76439e677a6a876db3f62e4156ece97"
+              "sha256": "84bfc5d773acdda0062ef3907b2347d4c43a8224b6f83d7c796b5b22b0ce4465"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for original page 002",
+              "name": "page_002_original.png",
+              "sha256": "b55a4b270d2d4eb43053d11dc1446766af1dbf4fe12a501adef84a6418e6cae0"
+            },
+            "thumb": {
+              "description": "Here's the preview for original page 002 (thumbnail)",
+              "name": "page_002_original.png.thumb",
+              "sha256": "4a6f77f77590039b869037a7282bb8a10c3e41ac3735cfd3b03abd96b4b7285d"
             }
           },
           {
             "img": {
               "description": "Here's the preview for styleless page 001",
               "name": "page_001_styleless.png",
-              "sha256": "7a25609e3701e613ce8d36c8e875414e9d65af6c41a5be7d8f10979509947fe0"
+              "sha256": "b2f2110d8b06b10a923175ae8bf2e49d9c9cf2ffce52c5717c9834744653c100"
             },
             "thumb": {
               "description": "Here's the preview for styleless page 001 (thumbnail)",
               "name": "page_001_styleless.png.thumb",
-              "sha256": "a622ad57d3f2d92bfd5e4c1864fe8dbc9f84af83f0f73dfe9092945d8aedeeb3"
+              "sha256": "d03357e0873d6f902d0a06d886d804b01cfd5ed903160a4d006e6d1f7822c7a9"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for styleless page 002",
+              "name": "page_002_styleless.png",
+              "sha256": "ddce35821c493c7bfd3fc8f42a2aabd13f1544f47c9eaa972abbe310a1c42bcf"
+            },
+            "thumb": {
+              "description": "Here's the preview for styleless page 002 (thumbnail)",
+              "name": "page_002_styleless.png.thumb",
+              "sha256": "8e9bfb8413a91097aab7f33473ee1bd904eee7d858d14ed9a4f624ee92ed796a"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for styleless page 003",
+              "name": "page_003_styleless.png",
+              "sha256": "2b696cbeac59e33b26b7b7d5d4185f499f3e755c52dced851c624906469cf214"
+            },
+            "thumb": {
+              "description": "Here's the preview for styleless page 003 (thumbnail)",
+              "name": "page_003_styleless.png.thumb",
+              "sha256": "504c414e0f3d06523ef76f6304e1efd3dabb784374c5baf01f7f429111cbe447"
             }
           }
         ],
@@ -47,7 +83,12 @@
             },
             "static": {
               "uri": [
-                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmailchi.mp%2F3510424dd07c%2Fwelcome-to-the-hood-mama-12648964%3Fe%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=54gnVqJS6gWwHycNJNJlQC2I5SuOlt6LmkrV0gPkYs4%3D&reserved=0"
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmailchi.mp%2F3510424dd07c%2Fwelcome-to-the-hood-mama-12648964%3Fe%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=54gnVqJS6gWwHycNJNJlQC2I5SuOlt6LmkrV0gPkYs4%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3De7d82539c7%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=HUTBDIbDx19cmDChYmiLnWR%2FmN%2FEHzooELaPhF5%2F03Q%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3D520e6ed9fe%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Mpad1LxmATY5E8%2B6Dnmo97QzMuc9NcG89Rk1KxfoST8%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3D95eb77a027%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=i%2BEKJFOUXLXtAwzQ2%2FyZoHTzJJHta7VcrQoznhWyRiA%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Fprofile%3Fu%3D5983652ad18203885ec6f3012%26id%3D62d7c10187%26e%3Dfbe2f9670c%26c%3De64d914bd4&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Z21eWSnIMADhSPNkWXdI%2Fqn%2BT6CIAzg%2BWL24tFMYnOw%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Funsubscribe%3Fu%3D5983652ad18203885ec6f3012%26id%3D62d7c10187%26e%3Dfbe2f9670c%26c%3De64d914bd4&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861614907%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=fqdtbo%2B2RIDP90whF6y3h%2BKNgkxWwR4DvyxeUoxDKE0%3D&reserved=0"
               ]
             }
           }
@@ -61,20 +102,44 @@
     "extracted": [],
     "supplementary": [
       {
+        "name": "page_003_styleless.png",
+        "sha256": "2b696cbeac59e33b26b7b7d5d4185f499f3e755c52dced851c624906469cf214"
+      },
+      {
+        "name": "page_002_original.png.thumb",
+        "sha256": "4a6f77f77590039b869037a7282bb8a10c3e41ac3735cfd3b03abd96b4b7285d"
+      },
+      {
+        "name": "page_003_styleless.png.thumb",
+        "sha256": "504c414e0f3d06523ef76f6304e1efd3dabb784374c5baf01f7f429111cbe447"
+      },
+      {
         "name": "page_001_original.png.thumb",
-        "sha256": "020b831972d81659caea4ba95f0e0cb7c76439e677a6a876db3f62e4156ece97"
+        "sha256": "84bfc5d773acdda0062ef3907b2347d4c43a8224b6f83d7c796b5b22b0ce4465"
+      },
+      {
+        "name": "page_002_styleless.png.thumb",
+        "sha256": "8e9bfb8413a91097aab7f33473ee1bd904eee7d858d14ed9a4f624ee92ed796a"
       },
       {
         "name": "page_001_original.png",
-        "sha256": "2aa0d3cd240b43b78c466dcf8f8eba3d7e0638f22b29f5c7fcb9cc08f7509192"
+        "sha256": "a52d606e1ec2873c797c44085ce0f8f5ad7477b25a52bf52bc2959ccc48a1d46"
       },
       {
         "name": "page_001_styleless.png",
-        "sha256": "7a25609e3701e613ce8d36c8e875414e9d65af6c41a5be7d8f10979509947fe0"
+        "sha256": "b2f2110d8b06b10a923175ae8bf2e49d9c9cf2ffce52c5717c9834744653c100"
+      },
+      {
+        "name": "page_002_original.png",
+        "sha256": "b55a4b270d2d4eb43053d11dc1446766af1dbf4fe12a501adef84a6418e6cae0"
       },
       {
         "name": "page_001_styleless.png.thumb",
-        "sha256": "a622ad57d3f2d92bfd5e4c1864fe8dbc9f84af83f0f73dfe9092945d8aedeeb3"
+        "sha256": "d03357e0873d6f902d0a06d886d804b01cfd5ed903160a4d006e6d1f7822c7a9"
+      },
+      {
+        "name": "page_002_styleless.png",
+        "sha256": "ddce35821c493c7bfd3fc8f42a2aabd13f1544f47c9eaa972abbe310a1c42bcf"
       }
     ]
   },
@@ -97,6 +162,31 @@
         {
           "heur_id": null,
           "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Fprofile%3Fu%3D5983652ad18203885ec6f3012%26id%3D62d7c10187%26e%3Dfbe2f9670c%26c%3De64d914bd4&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Z21eWSnIMADhSPNkWXdI%2Fqn%2BT6CIAzg%2BWL24tFMYnOw%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3D520e6ed9fe%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Mpad1LxmATY5E8%2B6Dnmo97QzMuc9NcG89Rk1KxfoST8%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3D95eb77a027%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=i%2BEKJFOUXLXtAwzQ2%2FyZoHTzJJHta7VcrQoznhWyRiA%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3De7d82539c7%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=HUTBDIbDx19cmDChYmiLnWR%2FmN%2FEHzooELaPhF5%2F03Q%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Funsubscribe%3Fu%3D5983652ad18203885ec6f3012%26id%3D62d7c10187%26e%3Dfbe2f9670c%26c%3De64d914bd4&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861614907%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=fqdtbo%2B2RIDP90whF6y3h%2BKNgkxWwR4DvyxeUoxDKE0%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
           "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmailchi.mp%2F3510424dd07c%2Fwelcome-to-the-hood-mama-12648964%3Fe%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=54gnVqJS6gWwHycNJNJlQC2I5SuOlt6LmkrV0gPkYs4%3D&reserved=0"
         }
       ]
@@ -104,6 +194,7 @@
     "temp_submission_data": {
       "passwords": [
         "CAUTION",
+        "CEO",
         "FREE"
       ]
     }

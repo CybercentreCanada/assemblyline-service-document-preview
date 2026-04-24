@@ -10,12 +10,12 @@
             "img": {
               "description": "Here's the preview for original page 001",
               "name": "page_001_original.png",
-              "sha256": "0259b9068dffcf2a49353526861d1fb6c4153e0d1467f7e7ab5dce935ee3d0be"
+              "sha256": "9dbce3639fd831a1a0a17af98732f3271c519d507f3ce673b3df0bab5b9b2f47"
             },
             "thumb": {
               "description": "Here's the preview for original page 001 (thumbnail)",
               "name": "page_001_original.png.thumb",
-              "sha256": "095ba259701d8d1dd04aafd51bfac29c46e3da6b544d561d146538bff2788f1d"
+              "sha256": "2a1b650ee39ddcf1f1391930403c22d387d28b3f55ab88f259712f2f825cf5d3"
             }
           }
         ],
@@ -35,12 +35,12 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_001_original.png",
-        "sha256": "0259b9068dffcf2a49353526861d1fb6c4153e0d1467f7e7ab5dce935ee3d0be"
+        "name": "page_001_original.png.thumb",
+        "sha256": "2a1b650ee39ddcf1f1391930403c22d387d28b3f55ab88f259712f2f825cf5d3"
       },
       {
-        "name": "page_001_original.png.thumb",
-        "sha256": "095ba259701d8d1dd04aafd51bfac29c46e3da6b544d561d146538bff2788f1d"
+        "name": "page_001_original.png",
+        "sha256": "9dbce3639fd831a1a0a17af98732f3271c519d507f3ce673b3df0bab5b9b2f47"
       }
     ]
   },

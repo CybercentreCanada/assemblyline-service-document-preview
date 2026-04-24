@@ -1,17 +1,19 @@
 """Main service module."""
 
 import email
+import functools
 import os
 import re
 import subprocess
 import tempfile
 from base64 import b64decode, b64encode
 from hashlib import sha256
-from io import StringIO
+from io import BytesIO, StringIO
 from tempfile import NamedTemporaryFile
 from time import time
 from zipfile import BadZipFile, ZipFile
 
+import fitz
 import pandas
 from assemblyline.common import forge
 from assemblyline.common.exceptions import RecoverableError
@@ -31,7 +33,8 @@ from assemblyline_v4_service.common.result import (
 from assemblyline_v4_service.common.utils import extract_passwords
 from bs4 import BeautifulSoup
 from documentbuilder.docbuilder import CDocBuilder
-from eml2pdf.libeml2pdf import Header, walk_eml
+from eml2pdf.libeml2pdf import _Header as Header
+from eml2pdf.libeml2pdf import _walk_eml as walk_eml
 from multidecoder.decoders.network import find_emails, find_urls
 from natsort import natsorted
 from PIL import Image, ImageOps
@@ -39,8 +42,43 @@ from selenium.common.exceptions import NoAlertPresentException, WebDriverExcepti
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 from selenium.webdriver.common.print_page_options import PrintOptions
 
-PDFTOPPM_DPI = os.environ.get("PDFTOPPM_DPI", "150")
+PDF_DPI = int(os.environ.get("PDF_DPI", 150))
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
+
+
+@functools.lru_cache(maxsize=32)
+def _read_file_bytes(fp: str) -> bytes:
+    """Read and cache file contents.
+
+    Args:
+        fp (str): The file path to read.
+
+    Returns:
+        bytes: The contents of the file as bytes.
+
+    """
+    with open(fp, "rb") as f:
+        return f.read()
+
+
+@functools.lru_cache(maxsize=8)
+def _open_fitz_doc(fp: str) -> fitz.Document:
+    """Open and cache a PyMuPDF document.
+
+    Args:
+        fp (str): The file path to the PDF document.
+
+    Returns:
+        fitz.Document: The opened PyMuPDF document.
+
+    """
+    return fitz.open(fp)
+
+
+def _clear_caches():
+    """Clear all file-level LRU caches between analysis runs."""
+    _read_file_bytes.cache_clear()
+    _open_fitz_doc.cache_clear()
 
 
 def eml2html(file_contents: bytes) -> str:
@@ -73,38 +111,24 @@ def eml2html(file_contents: bytes) -> str:
     """
 
 
-def pdfinfo_from_path(fp: str):
-    """Extract PDF metadata information using the `pdfinfo` command-line tool.
+def pdf_page_count(fp: str) -> int:
+    """Extract PDF metadata information using PyMuPDF.
 
     Args:
         fp (str): The file path to the PDF document.
 
     Returns:
-        dict: A dictionary containing the PDF metadata information, where keys are the metadata fields and values are
-        their corresponding values.
+        int: The number of pages in the PDF document.
 
     """
-    pdfinfo = {}
-    for info in (
-        subprocess.run(
-            ["pdfinfo", fp],
-            capture_output=True,
-        )
-        .stdout.strip()
-        .decode()
-        .split("\n")
-    ):
-        k, v = info.split(":", 1)
-        # Clean up spacing
-        v = v.lstrip()
-        pdfinfo[k] = v
-    return pdfinfo
+    doc = _open_fitz_doc(fp)
+    return doc.page_count
 
 
 def convert_from_path(
     fp: str, output_directory: str, first_page: int = 1, last_page: int | None = None, context: str = "original"
 ) -> None:
-    """Convert PDF to images using the `pdftoppm` command-line tool.
+    """Convert PDF to images using PyMuPDF.
 
     Args:
         fp (str): The file path to the PDF document.
@@ -114,13 +138,15 @@ def convert_from_path(
         context (str, optional): A context string to include in the output file names. Defaults to "original".
 
     """
-    pdf_conv_command = ["pdftoppm", "-r", PDFTOPPM_DPI, "-png", "-f", str(first_page)]
-    if last_page:
-        pdf_conv_command += ["-l", str(last_page)]
-    subprocess.run(
-        pdf_conv_command + [fp, os.path.join(output_directory, f"output_{context}")],
-        capture_output=True,
-    )
+    doc = _open_fitz_doc(fp)
+    end_page = min(last_page, doc.page_count) if last_page else doc.page_count
+    for page_num in range(first_page - 1, end_page):
+        page = doc[page_num]
+        zoom = PDF_DPI / 72  # 72 is the default DPI for PDFs
+        matrix = fitz.Matrix(zoom, zoom)
+        pix = page.get_pixmap(matrix=matrix)
+        output_path = os.path.join(output_directory, f"output_{context}-{page_num + 1}.png")
+        pix.save(output_path)
 
 
 class DocumentPreview(ServiceBase):
@@ -152,7 +178,7 @@ class DocumentPreview(ServiceBase):
         """Stop the DocumentPreview service."""
         self.log.debug("Document preview service ended")
 
-    def extract_pdf_text(self, path: str, max_pages: int) -> str:
+    def extract_pdf_text(self, path: str, max_pages: int) -> None | str:
         """Extract text from a PDF document.
 
         Args:
@@ -163,12 +189,14 @@ class DocumentPreview(ServiceBase):
             str: The path to the extracted text file.
         """
         output_path = os.path.join(self.working_directory, "extracted_text")
-        subprocess.run(
-            ["pdftotext", "-f", "1", "-l", str(max_pages), path, output_path],
-            capture_output=True,
-        )
+        doc = _open_fitz_doc(path)
+        text = ""
+        for page_num in range(min(max_pages, doc.page_count)):
+            text += doc[page_num].get_text()
 
-        if os.path.exists(output_path):
+        if text.strip():
+            with open(output_path, "w") as f:
+                f.write(text)
             return output_path
 
     def extract_pdf_images(self, path: str, max_pages: int) -> list[str]:
@@ -181,26 +209,22 @@ class DocumentPreview(ServiceBase):
         Returns:
             list[str]: A list of paths to the extracted image files.
         """
-        output_path_prefix = os.path.join(self.working_directory, "extracted_image")
-        subprocess.run(
-            [
-                "pdfimages",
-                "-f",
-                "1",
-                "-l",
-                str(max_pages),
-                "-png",
-                path,
-                output_path_prefix,
-            ],
-            capture_output=True,
-        )
-
-        return [
-            os.path.join(self.working_directory, f)
-            for f in os.listdir(self.working_directory)
-            if f.startswith("extracted_image")
-        ]
+        image_paths = []
+        doc = _open_fitz_doc(path)
+        img_index = 0
+        for page_num in range(min(max_pages, doc.page_count)):
+            for img_ref in doc[page_num].get_images(full=True):
+                xref = img_ref[0]
+                base_image = doc.extract_image(xref)
+                if base_image:
+                    ext = base_image["ext"]
+                    image_data = base_image["image"]
+                    output_path = os.path.join(self.working_directory, f"extracted_image-{img_index:03d}.{ext}")
+                    with open(output_path, "wb") as f:
+                        f.write(image_data)
+                    image_paths.append(output_path)
+                    img_index += 1
+        return image_paths
 
     def ebook_conversion(self, request: Request) -> None | str:
         """Convert eBooks (EPUB/MOBI) to PDF format using the `ebook-convert` command-line tool.
@@ -488,6 +512,7 @@ class DocumentPreview(ServiceBase):
         Raises:
             RecoverableError: If an error occurs during processing that should trigger a retry of the analysis.
         """
+        _clear_caches()
         start = time()
         result = Result()
 
@@ -524,13 +549,14 @@ class DocumentPreview(ServiceBase):
         def attach_images_to_section(run_ocr=False) -> str:
             extracted_text = ""
             for i, preview in enumerate(natsorted(previews)):
-                with open(os.path.join(self.working_directory, preview), "rb") as f:
-                    preview_hash = sha256(f.read()).hexdigest()
-                    if preview_hash in preview_hashes:
-                        # We've already added this image, skip it
-                        continue
-                    else:
-                        preview_hashes.append(preview_hash)
+                fp = os.path.join(self.working_directory, preview)
+                file_bytes = _read_file_bytes(fp)
+                preview_hash = sha256(file_bytes).hexdigest()
+                if preview_hash in preview_hashes:
+                    # We've already added this image, skip it
+                    continue
+                else:
+                    preview_hashes.append(preview_hash)
 
                 ocr_heur_id, ocr_io = None, None
                 if run_ocr:
@@ -538,12 +564,11 @@ class DocumentPreview(ServiceBase):
                     ocr_heur_id = 1 if request.deep_scan or (i < run_ocr_on_first_n_pages) else None
                     ocr_io = StringIO()
 
-                fp = os.path.join(self.working_directory, preview)
                 context, pg_no = preview[7:].split("-")
                 pg_no = pg_no[:-4].zfill(3)
 
                 # Analyze the preview to check if there's any QR code we can extract from it
-                qr_result = self.scan_for_QR_codes(Image.open(fp))
+                qr_result = self.scan_for_QR_codes(Image.open(BytesIO(_read_file_bytes(fp))))
                 if qr_result:
                     code_type, code_value = qr_result.split(":", 1)
                     if re.match(FULL_URI, code_value):
@@ -729,7 +754,7 @@ class DocumentPreview(ServiceBase):
             # Check to see if we're dealing with a suspicious PDF
             if request.file_type == "document/pdf":
                 try:
-                    if pdfinfo_from_path(request.file_path)["Pages"] == 1 and "click" in extracted_text.lower():
+                    if pdf_page_count(request.file_path) == 1 and "click" in extracted_text.lower():
                         # Suspected document is part of a phishing campaign
                         ResultTextSection(
                             "Suspected Phishing",

@@ -1,13 +1,10 @@
 assemblyline
 assemblyline-v4-service
-compoundfiles
-compressed_rtf
-imgkit
 multidecoder==1.6.24
 natsort
 pandas
-Pillow==12.1.1
 pytesseract
 selenium
 XlsxWriter
-eml2pdf
+eml2pdf>=2.0.2
+PyMuPDF

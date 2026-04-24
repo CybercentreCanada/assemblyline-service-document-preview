@@ -10,24 +10,60 @@
             "img": {
               "description": "Here's the preview for original page 001",
               "name": "page_001_original.png",
-              "sha256": "f573784d2e587d69276a0c832d770f786288ce59d73f9059dd915a926d6e12d9"
+              "sha256": "087e54019893a1dd561e8726ff8650e9b0a912fe9a7dc61a568c1519e668f23f"
             },
             "thumb": {
               "description": "Here's the preview for original page 001 (thumbnail)",
               "name": "page_001_original.png.thumb",
-              "sha256": "d153ae7e64a83b24150101bfd12b757259d9eaa0228b5cbdcb2b081011046067"
+              "sha256": "c848949fa186f6e0a19a7e228861f50da1949e14c2ce7ecdadd3dadfa9d2ba5c"
             }
           },
           {
             "img": {
-              "description": "Here's the preview for styleless page 001",
-              "name": "page_001_styleless.png",
-              "sha256": "fb7b68b47f7f8002cca2a91aca2eb42b4bb641de9938bba612148b57214efc2b"
+              "description": "Here's the preview for original page 002",
+              "name": "page_002_original.png",
+              "sha256": "54dc4cb982eff8c77f57f2046fcab284f453127882db13e12c069d05d5a8f968"
             },
             "thumb": {
-              "description": "Here's the preview for styleless page 001 (thumbnail)",
-              "name": "page_001_styleless.png.thumb",
-              "sha256": "b8534cc735201bd0f2c0cf386991684882be6f1edb5f2d5ff39f7310bf89ec26"
+              "description": "Here's the preview for original page 002 (thumbnail)",
+              "name": "page_002_original.png.thumb",
+              "sha256": "9808deb48c0e2930bc0b3d0d9d08e31c29b2bd7a7ec98ece29df4bb0175cbe16"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for plain page 001",
+              "name": "page_001_plain.png",
+              "sha256": "abe79e2a06b4990f222ead80297f3b1cb469d6c69a2d769b77c1c7fe68ecca7d"
+            },
+            "thumb": {
+              "description": "Here's the preview for plain page 001 (thumbnail)",
+              "name": "page_001_plain.png.thumb",
+              "sha256": "cfacc45bd3d15d092096a610a346ff32b829ab1403e6c8fe31de3896dc070338"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for plain page 002",
+              "name": "page_002_plain.png",
+              "sha256": "c0ea6b0fce816f5d6c57051f560b52d18f7979a77c6b61a3c759a1355e0f0251"
+            },
+            "thumb": {
+              "description": "Here's the preview for plain page 002 (thumbnail)",
+              "name": "page_002_plain.png.thumb",
+              "sha256": "ca4252374ed97e1dcccc663a9b203e11df17cfbe6c0a0d700db48d508755b6d2"
+            }
+          },
+          {
+            "img": {
+              "description": "Here's the preview for plain page 003",
+              "name": "page_003_plain.png",
+              "sha256": "aae04597be292e52aec820e740744b152586bfedbd3beb811df3ce82b0792dc3"
+            },
+            "thumb": {
+              "description": "Here's the preview for plain page 003 (thumbnail)",
+              "name": "page_003_plain.png.thumb",
+              "sha256": "4b2515c223847dc862b4e42d9e8d7473eaa6205a4f43cbf65e46c555ef9ec9ee"
             }
           }
         ],
@@ -44,6 +80,16 @@
                 "team@mamahood.app",
                 "Khawla.AlMaazmi@dubaiculture.ae"
               ]
+            },
+            "static": {
+              "uri": [
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmailchi.mp%2F3510424dd07c%2Fwelcome-to-the-hood-mama-12648964%3Fe%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=54gnVqJS6gWwHycNJNJlQC2I5SuOlt6LmkrV0gPkYs4%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3De7d82539c7%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=HUTBDIbDx19cmDChYmiLnWR%2FmN%2FEHzooELaPhF5%2F03Q%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3D520e6ed9fe%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Mpad1LxmATY5E8%2B6Dnmo97QzMuc9NcG89Rk1KxfoST8%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3D95eb77a027%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=i%2BEKJFOUXLXtAwzQ2%2FyZoHTzJJHta7VcrQoznhWyRiA%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Fprofile%3Fu%3D5983652ad18203885ec6f3012%26id%3D62d7c10187%26e%3Dfbe2f9670c%26c%3De64d914bd4&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Z21eWSnIMADhSPNkWXdI%2Fqn%2BT6CIAzg%2BWL24tFMYnOw%3D&reserved=0",
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Funsubscribe%3Fu%3D5983652ad18203885ec6f3012%26id%3D62d7c10187%26e%3Dfbe2f9670c%26c%3De64d914bd4&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861614907%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=fqdtbo%2B2RIDP90whF6y3h%2BKNgkxWwR4DvyxeUoxDKE0%3D&reserved=0"
+              ]
             }
           }
         },
@@ -56,20 +102,44 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_001_styleless.png.thumb",
-        "sha256": "b8534cc735201bd0f2c0cf386991684882be6f1edb5f2d5ff39f7310bf89ec26"
+        "name": "page_001_original.png",
+        "sha256": "087e54019893a1dd561e8726ff8650e9b0a912fe9a7dc61a568c1519e668f23f"
+      },
+      {
+        "name": "page_003_plain.png.thumb",
+        "sha256": "4b2515c223847dc862b4e42d9e8d7473eaa6205a4f43cbf65e46c555ef9ec9ee"
+      },
+      {
+        "name": "page_002_original.png",
+        "sha256": "54dc4cb982eff8c77f57f2046fcab284f453127882db13e12c069d05d5a8f968"
+      },
+      {
+        "name": "page_002_original.png.thumb",
+        "sha256": "9808deb48c0e2930bc0b3d0d9d08e31c29b2bd7a7ec98ece29df4bb0175cbe16"
+      },
+      {
+        "name": "page_003_plain.png",
+        "sha256": "aae04597be292e52aec820e740744b152586bfedbd3beb811df3ce82b0792dc3"
+      },
+      {
+        "name": "page_001_plain.png",
+        "sha256": "abe79e2a06b4990f222ead80297f3b1cb469d6c69a2d769b77c1c7fe68ecca7d"
+      },
+      {
+        "name": "page_002_plain.png",
+        "sha256": "c0ea6b0fce816f5d6c57051f560b52d18f7979a77c6b61a3c759a1355e0f0251"
       },
       {
         "name": "page_001_original.png.thumb",
-        "sha256": "d153ae7e64a83b24150101bfd12b757259d9eaa0228b5cbdcb2b081011046067"
+        "sha256": "c848949fa186f6e0a19a7e228861f50da1949e14c2ce7ecdadd3dadfa9d2ba5c"
       },
       {
-        "name": "page_001_original.png",
-        "sha256": "f573784d2e587d69276a0c832d770f786288ce59d73f9059dd915a926d6e12d9"
+        "name": "page_002_plain.png.thumb",
+        "sha256": "ca4252374ed97e1dcccc663a9b203e11df17cfbe6c0a0d700db48d508755b6d2"
       },
       {
-        "name": "page_001_styleless.png",
-        "sha256": "fb7b68b47f7f8002cca2a91aca2eb42b4bb641de9938bba612148b57214efc2b"
+        "name": "page_001_plain.png.thumb",
+        "sha256": "cfacc45bd3d15d092096a610a346ff32b829ab1403e6c8fe31de3896dc070338"
       }
     ]
   },
@@ -87,11 +157,44 @@
           "signatures": [],
           "value": "team@mamahood.app"
         }
+      ],
+      "network.static.uri": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Fprofile%3Fu%3D5983652ad18203885ec6f3012%26id%3D62d7c10187%26e%3Dfbe2f9670c%26c%3De64d914bd4&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Z21eWSnIMADhSPNkWXdI%2Fqn%2BT6CIAzg%2BWL24tFMYnOw%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3D520e6ed9fe%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=Mpad1LxmATY5E8%2B6Dnmo97QzMuc9NcG89Rk1KxfoST8%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3D95eb77a027%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=i%2BEKJFOUXLXtAwzQ2%2FyZoHTzJJHta7VcrQoznhWyRiA%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Ftrack%2Fclick%3Fu%3D5983652ad18203885ec6f3012%26id%3De7d82539c7%26e%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=HUTBDIbDx19cmDChYmiLnWR%2FmN%2FEHzooELaPhF5%2F03Q%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fapp.us21.list-manage.com%2Funsubscribe%3Fu%3D5983652ad18203885ec6f3012%26id%3D62d7c10187%26e%3Dfbe2f9670c%26c%3De64d914bd4&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861614907%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=fqdtbo%2B2RIDP90whF6y3h%2BKNgkxWwR4DvyxeUoxDKE0%3D&reserved=0"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmailchi.mp%2F3510424dd07c%2Fwelcome-to-the-hood-mama-12648964%3Fe%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=54gnVqJS6gWwHycNJNJlQC2I5SuOlt6LmkrV0gPkYs4%3D&reserved=0"
+        }
       ]
     },
     "temp_submission_data": {
       "passwords": [
         "CAUTION",
+        "CEO",
         "FREE"
       ]
     }

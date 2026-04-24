@@ -10,12 +10,12 @@
             "img": {
               "description": "Here's the preview for original page 001",
               "name": "page_001_original.png",
-              "sha256": "d8ce2247911b9cf08faaa1ed211e3f1f398089c9b37d3ab5a69bd986f4fde31e"
+              "sha256": "dd02b48f0e7f7c6539c6bb03d4552c7ae3745795c8588577c172d21861c3ef09"
             },
             "thumb": {
               "description": "Here's the preview for original page 001 (thumbnail)",
               "name": "page_001_original.png.thumb",
-              "sha256": "2c73f0d8a7b15260ac87940bc0e4dfd4e655b35ba085fa7a0665f8a24c2bc228"
+              "sha256": "0de84ae4b10e6ef065db2de5bbbe12d7a3aca8cdb073a200fb3d8e8c64b982e2"
             }
           }
         ],
@@ -34,6 +34,7 @@
             },
             "static": {
               "uri": [
+                "https://forms.office.com/Pages/ResponsePage.aspx?id=_tQLPBERE02ODHwzuet1gcZ35vV7DQtCkWrPHh3d2X1UN1FNVjdBM0I2M0hYRUNZR0lOQkU0UTVOVS4u",
                 "https://forms.office.com/Pages/ResponsePage.aspx?"
               ]
             }
@@ -49,11 +50,11 @@
     "supplementary": [
       {
         "name": "page_001_original.png.thumb",
-        "sha256": "2c73f0d8a7b15260ac87940bc0e4dfd4e655b35ba085fa7a0665f8a24c2bc228"
+        "sha256": "0de84ae4b10e6ef065db2de5bbbe12d7a3aca8cdb073a200fb3d8e8c64b982e2"
       },
       {
         "name": "page_001_original.png",
-        "sha256": "d8ce2247911b9cf08faaa1ed211e3f1f398089c9b37d3ab5a69bd986f4fde31e"
+        "sha256": "dd02b48f0e7f7c6539c6bb03d4552c7ae3745795c8588577c172d21861c3ef09"
       }
     ]
   },
@@ -72,6 +73,11 @@
           "heur_id": null,
           "signatures": [],
           "value": "https://forms.office.com/Pages/ResponsePage.aspx?"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://forms.office.com/Pages/ResponsePage.aspx?id=_tQLPBERE02ODHwzuet1gcZ35vV7DQtCkWrPHh3d2X1UN1FNVjdBM0I2M0hYRUNZR0lOQkU0UTVOVS4u"
         }
       ]
     },

@@ -44,6 +44,11 @@
                 "team@mamahood.app",
                 "Khawla.AlMaazmi@dubaiculture.ae"
               ]
+            },
+            "static": {
+              "uri": [
+                "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmailchi.mp%2F3510424dd07c%2Fwelcome-to-the-hood-mama-12648964%3Fe%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=54gnVqJS6gWwHycNJNJlQC2I5SuOlt6LmkrV0gPkYs4%3D&reserved=0"
+              ]
             }
           }
         },
@@ -86,6 +91,13 @@
           "heur_id": null,
           "signatures": [],
           "value": "team@mamahood.app"
+        }
+      ],
+      "network.static.uri": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://are01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fmailchi.mp%2F3510424dd07c%2Fwelcome-to-the-hood-mama-12648964%3Fe%3Dfbe2f9670c&data=05%7C01%7CKhawla.AlMaazmi%40dubaiculture.ae%7C40fe775bb0b942e62a8208dbab8394b5%7C1ee74fefbf154332b65a6df657279935%7C1%7C0%7C638292353861459127%7CUnknown%7CTWFpbGZsb3d8eyJWIjoiMC4wLjAwMDAiLCJQIjoiV2luMzIiLCJBTiI6Ik1haWwiLCJXVCI6Mn0%3D%7C3000%7C%7C%7C&sdata=54gnVqJS6gWwHycNJNJlQC2I5SuOlt6LmkrV0gPkYs4%3D&reserved=0"
         }
       ]
     },

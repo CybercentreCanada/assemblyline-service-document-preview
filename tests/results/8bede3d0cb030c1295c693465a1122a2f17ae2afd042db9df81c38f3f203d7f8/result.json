@@ -34,6 +34,7 @@
             },
             "static": {
               "uri": [
+                "https://forms.office.com/Pages/ResponsePage.aspx?id=_tQLPBERE02ODHwzuet1gcZ35vV7DQtCkWrPHh3d2X1UN1FNVjdBM0I2M0hYRUNZR0lOQkU0UTVOVS4u",
                 "https://forms.office.com/Pages/ResponsePage.aspx?"
               ]
             }
@@ -72,6 +73,11 @@
           "heur_id": null,
           "signatures": [],
           "value": "https://forms.office.com/Pages/ResponsePage.aspx?"
+        },
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://forms.office.com/Pages/ResponsePage.aspx?id=_tQLPBERE02ODHwzuet1gcZ35vV7DQtCkWrPHh3d2X1UN1FNVjdBM0I2M0hYRUNZR0lOQkU0UTVOVS4u"
         }
       ]
     },

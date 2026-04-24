@@ -618,6 +618,20 @@ class DocumentPreview(ServiceBase):
                     embedded_image_paths = self.extract_pdf_images(pdf_path, max_pages)
                     extracted_text_path = self.extract_pdf_text(pdf_path, max_pages)
 
+                    # Check if we can extract any hyperlinked content from the PDF
+                    doc = _open_fitz_doc(pdf_path)
+                    for page in doc:
+                        for link in page.get_links():
+                            link_uri = link.get("uri", "")
+                            if not link_uri:
+                                continue
+                            if link_uri.startswith("mailto:"):
+                                # Tag email address
+                                image_section.add_tag("network.email.address", link_uri[7:])
+                            else:
+                                # Assume this is a URI
+                                image_section.add_tag("network.static.uri", link_uri)
+
                     if extracted_text_path is not None:
                         with open(extracted_text_path, "r") as fh:
                             extracted_text += fh.read()

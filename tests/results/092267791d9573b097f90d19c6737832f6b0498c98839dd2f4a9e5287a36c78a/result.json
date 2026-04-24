@@ -25,7 +25,15 @@
         "depth": 0,
         "heuristic": null,
         "promote_to": "SCREENSHOT",
-        "tags": {},
+        "tags": {
+          "network": {
+            "static": {
+              "uri": [
+                "https://was-col.com/um/?xL=8914514"
+              ]
+            }
+          }
+        },
         "title_text": "Preview Image(s)",
         "zeroize_on_tag_safe": false
       }
@@ -46,7 +54,15 @@
   },
   "results": {
     "heuristics": [],
-    "tags": {},
+    "tags": {
+      "network.static.uri": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "https://was-col.com/um/?xL=8914514"
+        }
+      ]
+    },
     "temp_submission_data": {}
   }
 }

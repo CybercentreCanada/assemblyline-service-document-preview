@@ -80,6 +80,7 @@ def _clear_caches():
     _open_fitz_doc.cache_clear()
 
 
+# MARK: EML2HTML
 def eml2html(file_contents: bytes) -> str:
     """Convert an EML file to HTML format.
 
@@ -110,24 +111,11 @@ def eml2html(file_contents: bytes) -> str:
     """
 
 
-def pdf_page_count(fp: str) -> int:
-    """Extract PDF metadata information using PyMuPDF.
-
-    Args:
-        fp (str): The file path to the PDF document.
-
-    Returns:
-        int: The number of pages in the PDF document.
-
-    """
-    doc = _open_fitz_doc(fp)
-    return doc.page_count
-
-
-def convert_from_path(
+# MARK: PDF rendering
+def render_pages(
     fp: str, output_directory: str, first_page: int = 1, last_page: int | None = None, context: str = "original"
 ) -> None:
-    """Convert PDF to images using PyMuPDF.
+    """Convert PDF/Mobi/EPUB to images using PyMuPDF.
 
     Args:
         fp (str): The file path to the PDF document.
@@ -148,6 +136,7 @@ def convert_from_path(
         pix.save(output_path)
 
 
+# MARK: Service class
 class DocumentPreview(ServiceBase):
     """Service to render document previews and extract text/images from documents."""
 
@@ -177,6 +166,7 @@ class DocumentPreview(ServiceBase):
         """Stop the DocumentPreview service."""
         self.log.debug("Document preview service ended")
 
+    # MARK: PDF text extraction
     def extract_pdf_text(self, path: str, max_pages: int) -> None | str:
         """Extract text from a PDF document.
 
@@ -198,6 +188,7 @@ class DocumentPreview(ServiceBase):
                 f.write(text)
             return output_path
 
+    # MARK: PDF image extraction
     def extract_pdf_images(self, path: str, max_pages: int) -> list[str]:
         """Extract images from a PDF document.
 
@@ -225,30 +216,7 @@ class DocumentPreview(ServiceBase):
                     img_index += 1
         return image_paths
 
-    def ebook_conversion(self, request: Request) -> None | str:
-        """Convert eBooks (EPUB/MOBI) to PDF format using the `ebook-convert` command-line tool.
-
-        Args:
-            request (Request): The service request object containing parameters and file information.
-
-        Returns:
-            str: The path to the converted PDF file, or None if conversion failed.
-
-        """
-        ext = request.file_type.replace("document/", "")
-        with tempfile.NamedTemporaryFile(suffix=f".{ext}") as tmp:
-            tmp.write(request.file_contents)
-            tmp.flush()
-
-            output_path = os.path.join(self.working_directory, "converted.pdf")
-            subprocess.run(
-                ["ebook-convert", tmp.name, output_path],
-                capture_output=True,
-            )
-
-            if os.path.exists(output_path):
-                return output_path
-
+    # MARK: Office conversion
     def office_conversion(self, file: str, request: Request) -> str:
         """Convert Office document to PDF and extract any media if possible.
 
@@ -309,6 +277,7 @@ class DocumentPreview(ServiceBase):
         if os.path.exists(output_path):
             return output_path
 
+    # MARK: HTML rendering
     def html_render(self, file_contents: bytes, max_pages: int = 1) -> None | str:
         """Render HTML content in a browser and save as PDF.
 
@@ -376,16 +345,7 @@ class DocumentPreview(ServiceBase):
                     self.browser.close()
                     self.browser.switch_to.window(self.browser.window_handles[-1])
 
-    def pdf_to_images(self, file, max_pages=None, context="original"):
-        """Convert PDF to images for previewing.
-
-        Args:
-            file (str): The path to the PDF file.
-            max_pages (int, optional): The maximum number of pages to convert. Defaults to None.
-            context (str, optional): The context for the conversion. Defaults to "original".
-        """
-        convert_from_path(file, self.working_directory, first_page=1, last_page=max_pages, context=context)
-
+    # MARK: Rendering entrypoint
     def render_documents(self, request: Request, max_pages=1) -> list[tuple[str, str]] | None:
         """Render documents based on their file type.
 
@@ -429,11 +389,9 @@ class DocumentPreview(ServiceBase):
 
                 return [("original", self.office_conversion(tmp.name, request))]
 
-        # PDF
-        elif request.file_type == "document/pdf":
+        # PDF/Ebook formats (natively supported by PyMuPDF)
+        elif request.file_type in ["document/epub", "document/mobi", "document/pdf"]:
             return [("original", request.file_path)]
-        elif request.file_type in ["document/epub", "document/mobi"]:
-            return [("original", self.ebook_conversion(request))]
         # EML/MSG
         elif request.file_type.endswith("email"):
             file_contents = request.file_contents
@@ -470,6 +428,7 @@ class DocumentPreview(ServiceBase):
                 pdf_files.append(("plain", self.html_render(str(bsoup).encode(), max_pages)))
             return pdf_files
 
+    # MARK: IOC tagging
     def tag_network_iocs(self, section: ResultSection, ocr_content: str) -> None:
         """Tag any network IOCs found in OCR output.
 
@@ -480,6 +439,7 @@ class DocumentPreview(ServiceBase):
         [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]
         [section.add_tag("network.static.uri", node.value) for node in find_urls(ocr_content.encode())]
 
+    # MARK: QR code scanning
     def scan_for_QR_codes(self, image: Image) -> str:
         """Scan the given image for QR codes and return the decoded content if found.
 
@@ -511,6 +471,7 @@ class DocumentPreview(ServiceBase):
                     text=True,
                 ).stdout.strip()
 
+    # MARK: Main execution
     def execute(self, request):
         """Main execution point for the service.
 
@@ -533,7 +494,7 @@ class DocumentPreview(ServiceBase):
                 pdf_paths = [(ctx, path) for ctx, path in pdf_paths if path]
                 # Convert PDF to images for ImageSection
                 for context, pdf_path in pdf_paths:
-                    self.pdf_to_images(pdf_path, max_pages, context=context)
+                    render_pages(pdf_path, self.working_directory, first_page=1, last_page=max_pages, context=context)
         except Exception as e:  # noqa: BLE001
             # If we run into an error with no message, raise as a recoverable error to try again
             if not str(e):
@@ -776,7 +737,8 @@ class DocumentPreview(ServiceBase):
             # Check to see if we're dealing with a suspicious PDF
             if request.file_type == "document/pdf":
                 try:
-                    if pdf_page_count(request.file_path) == 1 and "click" in extracted_text.lower():
+                    doc = _open_fitz_doc(request.file_path)
+                    if doc.page_count == 1 and "click" in extracted_text.lower():
                         # Suspected document is part of a phishing campaign
                         ResultTextSection(
                             "Suspected Phishing",

@@ -1,4 +1,3 @@
-calibre
 libemail-address-perl
 libemail-outlook-message-perl
 tesseract-ocr

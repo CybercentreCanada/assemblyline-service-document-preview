@@ -3,7 +3,6 @@ assemblyline-v4-service
 multidecoder==1.6.24
 natsort
 pandas
-Pillow==12.1.1
 pytesseract
 selenium
 XlsxWriter

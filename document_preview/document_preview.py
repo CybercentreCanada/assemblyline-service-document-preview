@@ -460,22 +460,14 @@ class DocumentPreview(ServiceBase):
         elif request.file_type == "code/html":
             # Render the original HTML first
             pdf_files = []
-            bsoup = BeautifulSoup(request.file_contents, "html.parser")
             pdf_files.append(("original", self.html_render(request.file_contents, max_pages)))
 
-            # Render the HTML with scripts removed
-            has_scripts = bool(bsoup("script"))
-            if has_scripts:
-                [s.extract() for s in bsoup("script")]
-                scriptless_html = str(bsoup).encode()
-                pdf_files.append(("scriptless", self.html_render(scriptless_html, max_pages)))
-
-            # Render the HTML with styling removed (we'll use this version for OCR)
-            has_styles = bool(bsoup("style"))
-            if has_styles:
-                [s.extract() for s in bsoup("style")]
-                styleless_html = str(bsoup).encode()
-                pdf_files.append(("styleless", self.html_render(styleless_html, max_pages)))
+            # Render the HTML with scripts and styling removed
+            if b"<script" in request.file_contents or b"<style" in request.file_contents:
+                bsoup = BeautifulSoup(request.file_contents, "html.parser")
+                [s.decompose() for s in bsoup("script")]
+                [s.decompose() for s in bsoup("style")]
+                pdf_files.append(("plain", self.html_render(str(bsoup).encode(), max_pages)))
             return pdf_files
 
     def tag_network_iocs(self, section: ResultSection, ocr_content: str) -> None:

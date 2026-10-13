@@ -45,6 +45,8 @@ from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 PDF_DPI = int(os.environ.get("PDF_DPI", "150"))
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
 
+FULL_URI_REGEX = re.compile(FULL_URI)
+
 # Ignore default max image pixels limit imposed by Pillow
 Image.MAX_IMAGE_PIXELS = None
 
@@ -539,7 +541,7 @@ class DocumentPreview(ServiceBase):
                 qr_result = self.scan_for_QR_codes(Image.open(BytesIO(_read_file_bytes(fp))))
                 if qr_result:
                     code_type, code_value = qr_result.split(":", 1)
-                    if re.match(FULL_URI, code_value):
+                    if FULL_URI_REGEX.match(code_value):
                         # Tag URI
                         image_section.add_tag("network.static.uri", code_value)
                     else:
@@ -591,11 +593,13 @@ class DocumentPreview(ServiceBase):
                     for page in doc:
                         for link in page.get_links():
                             link_uri = link.get("uri", "")
-                            if not link_uri:
+                            if not link_uri or link_uri.startswith("tel:"):
+                                # Skip telephone links as they are not relevant for further processing
                                 continue
 
                             # Tag the link URI appropriately
-                            image_section.add_tag("network.static.uri", link_uri)
+                            if FULL_URI_REGEX.match(link_uri):
+                                image_section.add_tag("network.static.uri", link_uri)
 
                             # Check if the link is a mailto link
                             if link_uri.startswith("mailto:"):

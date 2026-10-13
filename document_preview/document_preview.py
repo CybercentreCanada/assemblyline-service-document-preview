@@ -14,8 +14,8 @@ from time import time
 from urllib.parse import urlparse
 from zipfile import BadZipFile, ZipFile
 
-import fitz
 import pandas
+import pymupdf
 from assemblyline.common import forge
 from assemblyline.common.exceptions import RecoverableError
 from assemblyline.odm.base import EMAIL_REGEX, FULL_URI
@@ -65,23 +65,23 @@ def _read_file_bytes(fp: str) -> bytes:
 
 
 @functools.lru_cache(maxsize=8)
-def _open_fitz_doc(fp: str) -> fitz.Document:
+def _open_pymupdf_doc(fp: str) -> pymupdf.Document:
     """Open and cache a PyMuPDF document.
 
     Args:
         fp (str): The file path to the PDF document.
 
     Returns:
-        fitz.Document: The opened PyMuPDF document.
+        pymupdf.Document: The opened PyMuPDF document.
 
     """
-    return fitz.open(fp)
+    return pymupdf.open(fp)
 
 
 def _clear_caches():
     """Clear all file-level LRU caches between analysis runs."""
     _read_file_bytes.cache_clear()
-    _open_fitz_doc.cache_clear()
+    _open_pymupdf_doc.cache_clear()
 
 
 # MARK: EML2HTML
@@ -129,12 +129,12 @@ def render_pages(
         context (str, optional): A context string to include in the output file names. Defaults to "original".
 
     """
-    doc = _open_fitz_doc(fp)
+    doc = _open_pymupdf_doc(fp)
     end_page = min(last_page, doc.page_count) if last_page else doc.page_count
     for page_num in range(first_page - 1, end_page):
         page = doc[page_num]
         zoom = PDF_DPI / 72  # 72 is the default DPI for PDFs
-        matrix = fitz.Matrix(zoom, zoom)
+        matrix = pymupdf.Matrix(zoom, zoom)
         pix = page.get_pixmap(matrix=matrix)
         output_path = os.path.join(output_directory, f"output_{context}-{page_num + 1}.png")
         pix.save(output_path)
@@ -182,7 +182,7 @@ class DocumentPreview(ServiceBase):
             str: The path to the extracted text file.
         """
         output_path = os.path.join(self.working_directory, "extracted_text")
-        doc = _open_fitz_doc(path)
+        doc = _open_pymupdf_doc(path)
         text = ""
         for page_num in range(min(max_pages, doc.page_count)):
             text += doc[page_num].get_text()
@@ -204,7 +204,7 @@ class DocumentPreview(ServiceBase):
             list[str]: A list of paths to the extracted image files.
         """
         image_paths = []
-        doc = _open_fitz_doc(path)
+        doc = _open_pymupdf_doc(path)
         img_index = 0
         for page_num in range(min(max_pages, doc.page_count)):
             for img_ref in doc[page_num].get_images(full=True):
@@ -592,7 +592,7 @@ class DocumentPreview(ServiceBase):
                     extracted_text_path = self.extract_pdf_text(pdf_path, max_pages)
 
                     # Check if we can extract any hyperlinked content from the PDF
-                    doc = _open_fitz_doc(pdf_path)
+                    doc = _open_pymupdf_doc(pdf_path)
                     for page in doc:
                         for link in page.get_links():
                             link_uri = link.get("uri", "")
@@ -747,7 +747,7 @@ class DocumentPreview(ServiceBase):
             # Check to see if we're dealing with a suspicious PDF
             if request.file_type == "document/pdf":
                 try:
-                    doc = _open_fitz_doc(request.file_path)
+                    doc = _open_pymupdf_doc(request.file_path)
                     if doc.page_count == 1 and "click" in extracted_text.lower():
                         # Suspected document is part of a phishing campaign
                         ResultTextSection(

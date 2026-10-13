@@ -42,7 +42,7 @@ from PIL import Image, ImageOps
 from selenium.common.exceptions import NoAlertPresentException, WebDriverException
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 
-PDF_DPI = int(os.environ.get("PDF_DPI", 150))
+PDF_DPI = int(os.environ.get("PDF_DPI", "150"))
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
 
 # Ignore default max image pixels limit imposed by Pillow
@@ -171,7 +171,7 @@ class DocumentPreview(ServiceBase):
         self.log.debug("Document preview service ended")
 
     # MARK: PDF text extraction
-    def extract_pdf_text(self, path: str, max_pages: int) -> None | str:
+    def extract_pdf_text(self, path: str, max_pages: int) -> str | None:
         """Extract text from a PDF document.
 
         Args:
@@ -282,7 +282,7 @@ class DocumentPreview(ServiceBase):
             return output_path
 
     # MARK: HTML rendering
-    def html_render(self, file_contents: bytes, max_pages: int = 1) -> None | str:
+    def html_render(self, file_contents: bytes, max_pages: int = 1) -> str | None:
         """Render HTML content in a browser and save as PDF.
 
         Args:
@@ -290,7 +290,7 @@ class DocumentPreview(ServiceBase):
             max_pages (int): The maximum number of pages to render.
 
         Returns:
-            None | str: The path to the rendered PDF file, or None if rendering failed.
+            str | None: The path to the rendered PDF file, or None if rendering failed.
         """
         if b"window.location.href = " in file_contents:
             # Document contains code that will cause a redirect, something we likely can't follow
@@ -404,8 +404,7 @@ class DocumentPreview(ServiceBase):
             if request.file_type == "document/office/email":
                 with tempfile.NamedTemporaryFile(suffix=".eml") as tmp:
                     subprocess.run(
-                        ["msgconvert", "-outfile", tmp.name, request.file_path],
-                        capture_output=True,
+                        ["msgconvert", "-outfile", tmp.name, request.file_path], capture_output=True, check=False
                     )
                     tmp.seek(0)
                     file_contents = tmp.read()
@@ -457,9 +456,7 @@ class DocumentPreview(ServiceBase):
         with NamedTemporaryFile() as tmp_qr:
             image.save(tmp_qr.name, format="PNG")
             qr_results = subprocess.run(
-                ["zbarimg", "-q", tmp_qr.name],
-                capture_output=True,
-                text=True,
+                ["zbarimg", "-q", tmp_qr.name], capture_output=True, text=True, check=False
             ).stdout.strip()
 
             if qr_results:
@@ -470,9 +467,7 @@ class DocumentPreview(ServiceBase):
                 tmp_qr.seek(0)
                 ImageOps.invert(image.convert("RGB")).save(tmp_qr.name, format="PNG")
                 return subprocess.run(
-                    ["zbarimg", "-q", tmp_qr.name],
-                    capture_output=True,
-                    text=True,
+                    ["zbarimg", "-q", tmp_qr.name], capture_output=True, text=True, check=False
                 ).stdout.strip()
 
     # MARK: Main execution

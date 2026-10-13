@@ -11,13 +11,14 @@ from hashlib import sha256
 from io import BytesIO, StringIO
 from tempfile import NamedTemporaryFile
 from time import time
+from urllib.parse import urlparse
 from zipfile import BadZipFile, ZipFile
 
 import fitz
 import pandas
 from assemblyline.common import forge
 from assemblyline.common.exceptions import RecoverableError
-from assemblyline.odm.base import FULL_URI
+from assemblyline.odm.base import EMAIL_REGEX, FULL_URI
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
 from assemblyline_v4_service.common.ocr import ocr_detections
@@ -597,12 +598,18 @@ class DocumentPreview(ServiceBase):
                             link_uri = link.get("uri", "")
                             if not link_uri:
                                 continue
+
+                            # Tag the link URI appropriately
+                            image_section.add_tag("network.static.uri", link_uri)
+
+                            # Check if the link is a mailto link
                             if link_uri.startswith("mailto:"):
+                                # Parse the mailto link and extract the email address from the path
+                                email_address = urlparse(link_uri).path
+
                                 # Tag email address
-                                image_section.add_tag("network.email.address", link_uri[7:])
-                            else:
-                                # Assume this is a URI
-                                image_section.add_tag("network.static.uri", link_uri)
+                                if email_address and re.match(EMAIL_REGEX, email_address):
+                                    image_section.add_tag("network.email.address", email_address)
 
                     if extracted_text_path is not None:
                         with open(extracted_text_path, "r") as fh:

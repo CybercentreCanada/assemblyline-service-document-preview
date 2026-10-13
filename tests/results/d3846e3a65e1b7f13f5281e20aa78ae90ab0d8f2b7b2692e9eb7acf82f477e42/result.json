@@ -1,0 +1,73 @@
+{
+  "extra": {
+    "drop_file": false,
+    "score": 0,
+    "sections": [
+      {
+        "auto_collapse": false,
+        "body": [
+          {
+            "img": {
+              "description": "Here's the preview for original page 001",
+              "name": "page_001_original.png",
+              "sha256": "e591cd6110f03d7ded6b1623f1f674541f420b2f206b57dc847108763b06d543"
+            },
+            "thumb": {
+              "description": "Here's the preview for original page 001 (thumbnail)",
+              "name": "page_001_original.png.thumb",
+              "sha256": "903881dc3337a46178e50836c2303522d2dd616aaa2d522954bb62ea0f926969"
+            }
+          }
+        ],
+        "body_config": {},
+        "body_format": "IMAGE",
+        "classification": "TLP:C",
+        "depth": 0,
+        "heuristic": null,
+        "promote_to": "SCREENSHOT",
+        "tags": {
+          "network": {
+            "email": {
+              "address": [
+                "webmaster@example.com"
+              ]
+            }
+          }
+        },
+        "title_text": "Preview Image(s)",
+        "zeroize_on_tag_safe": false
+      }
+    ]
+  },
+  "files": {
+    "extracted": [],
+    "supplementary": [
+      {
+        "name": "page_001_original.png.thumb",
+        "sha256": "903881dc3337a46178e50836c2303522d2dd616aaa2d522954bb62ea0f926969"
+      },
+      {
+        "name": "page_001_original.png",
+        "sha256": "e591cd6110f03d7ded6b1623f1f674541f420b2f206b57dc847108763b06d543"
+      }
+    ]
+  },
+  "results": {
+    "heuristics": [],
+    "tags": {
+      "network.email.address": [
+        {
+          "heur_id": null,
+          "signatures": [],
+          "value": "webmaster@example.com"
+        }
+      ]
+    },
+    "temp_submission_data": {
+      "passwords": [
+        "HTML",
+        "URI"
+      ]
+    }
+  }
+}

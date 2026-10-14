@@ -18,7 +18,8 @@ import pandas
 import pymupdf
 from assemblyline.common import forge
 from assemblyline.common.exceptions import RecoverableError
-from assemblyline.odm.base import EMAIL_REGEX, FULL_URI
+from assemblyline.odm.base import EMAIL_REGEX as EMAIL_RE
+from assemblyline.odm.base import FULL_URI
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
 from assemblyline_v4_service.common.ocr import ocr_detections
@@ -46,6 +47,7 @@ PDF_DPI = int(os.environ.get("PDF_DPI", "150"))
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
 
 FULL_URI_REGEX = re.compile(FULL_URI)
+EMAIL_REGEX = re.compile(EMAIL_RE)
 
 # Ignore default max image pixels limit imposed by Pillow
 Image.MAX_IMAGE_PIXELS = None
@@ -441,8 +443,23 @@ class DocumentPreview(ServiceBase):
             section (ResultSection): The result section to add tags to.
             ocr_content (str): The OCR-extracted text content to scan for IOCs.
         """
-        [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]
-        [section.add_tag("network.static.uri", node.value) for node in find_urls(ocr_content.encode())]
+        # Tag any email addresses found in the OCR content
+        [
+            section.add_tag("network.email.address", node.value)
+            for node in find_emails(ocr_content.encode())
+            if EMAIL_REGEX.match(node.value.decode())
+        ]
+
+        # Tag any URLs found in the OCR content
+        for node in find_urls(ocr_content.encode()):
+            if not FULL_URI_REGEX.match(node.value.decode()):
+                if ocr_content[node.end + 1] == b"\n":
+                    # There is a line break in the middle of the URL
+                    next_line_end = ocr_content.find(b"\n", node.end + 1)
+                    full_url = ocr_content[node.start : next_line_end].replace(b"\n", b"").strip()
+                    section.add_tag("network.static.uri", full_url)
+            else:
+                section.add_tag("network.static.uri", node.value)
 
     # MARK: QR code scanning
     def scan_for_QR_codes(self, image: Image) -> str:
@@ -607,7 +624,7 @@ class DocumentPreview(ServiceBase):
                                 email_address = urlparse(link_uri).path
 
                                 # Tag email address
-                                if email_address and re.match(EMAIL_REGEX, email_address):
+                                if email_address and EMAIL_REGEX.match(email_address):
                                     image_section.add_tag("network.email.address", email_address)
 
                     if extracted_text_path is not None:

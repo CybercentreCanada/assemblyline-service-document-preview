@@ -456,8 +456,11 @@ class DocumentPreview(ServiceBase):
                 if ocr_content[node.end + 1] == b"\n":
                     # There is a line break in the middle of the URL
                     next_line_end = ocr_content.find(b"\n", node.end + 1)
-                    full_url = ocr_content[node.start : next_line_end].replace(b"\n", b"").strip()
-                    section.add_tag("network.static.uri", full_url)
+                    # Replace only the first instance of a line break in the joined string
+                    # then check for a full URL match
+                    match = FULL_URI_REGEX.search(ocr_content[node.start : next_line_end].replace(b"\n", b"", 1))
+                    if match:
+                        section.add_tag("network.static.uri", match.group(0))
             else:
                 section.add_tag("network.static.uri", node.value)
 

@@ -11,12 +11,14 @@ from hashlib import sha256
 from io import BytesIO, StringIO
 from tempfile import NamedTemporaryFile
 from time import time
+from urllib.parse import urlparse
 from zipfile import BadZipFile, ZipFile
 
-import fitz
 import pandas
+import pymupdf
 from assemblyline.common import forge
 from assemblyline.common.exceptions import RecoverableError
+from assemblyline.odm.base import EMAIL_REGEX as EMAIL_RE
 from assemblyline.odm.base import FULL_URI
 from assemblyline_v4_service.common.base import ServiceBase
 from assemblyline_v4_service.common.ocr import detections as indicator_detections
@@ -41,8 +43,11 @@ from PIL import Image, ImageOps
 from selenium.common.exceptions import NoAlertPresentException, WebDriverException
 from selenium.webdriver import Chrome, ChromeOptions, ChromeService
 
-PDF_DPI = int(os.environ.get("PDF_DPI", 150))
+PDF_DPI = int(os.environ.get("PDF_DPI", "150"))
 IDENTIFY = forge.get_identify(use_cache=os.environ.get("PRIVILEGED", "false").lower() == "true")
+
+FULL_URI_REGEX = re.compile(FULL_URI)
+EMAIL_REGEX = re.compile(EMAIL_RE)
 
 # Ignore default max image pixels limit imposed by Pillow
 Image.MAX_IMAGE_PIXELS = None
@@ -64,23 +69,23 @@ def _read_file_bytes(fp: str) -> bytes:
 
 
 @functools.lru_cache(maxsize=8)
-def _open_fitz_doc(fp: str) -> fitz.Document:
+def _open_pymupdf_doc(fp: str) -> pymupdf.Document:
     """Open and cache a PyMuPDF document.
 
     Args:
         fp (str): The file path to the PDF document.
 
     Returns:
-        fitz.Document: The opened PyMuPDF document.
+        pymupdf.Document: The opened PyMuPDF document.
 
     """
-    return fitz.open(fp)
+    return pymupdf.open(fp)
 
 
 def _clear_caches():
     """Clear all file-level LRU caches between analysis runs."""
     _read_file_bytes.cache_clear()
-    _open_fitz_doc.cache_clear()
+    _open_pymupdf_doc.cache_clear()
 
 
 # MARK: EML2HTML
@@ -128,12 +133,12 @@ def render_pages(
         context (str, optional): A context string to include in the output file names. Defaults to "original".
 
     """
-    doc = _open_fitz_doc(fp)
+    doc = _open_pymupdf_doc(fp)
     end_page = min(last_page, doc.page_count) if last_page else doc.page_count
     for page_num in range(first_page - 1, end_page):
         page = doc[page_num]
         zoom = PDF_DPI / 72  # 72 is the default DPI for PDFs
-        matrix = fitz.Matrix(zoom, zoom)
+        matrix = pymupdf.Matrix(zoom, zoom)
         pix = page.get_pixmap(matrix=matrix)
         output_path = os.path.join(output_directory, f"output_{context}-{page_num + 1}.png")
         pix.save(output_path)
@@ -170,7 +175,7 @@ class DocumentPreview(ServiceBase):
         self.log.debug("Document preview service ended")
 
     # MARK: PDF text extraction
-    def extract_pdf_text(self, path: str, max_pages: int) -> None | str:
+    def extract_pdf_text(self, path: str, max_pages: int) -> str | None:
         """Extract text from a PDF document.
 
         Args:
@@ -181,7 +186,7 @@ class DocumentPreview(ServiceBase):
             str: The path to the extracted text file.
         """
         output_path = os.path.join(self.working_directory, "extracted_text")
-        doc = _open_fitz_doc(path)
+        doc = _open_pymupdf_doc(path)
         text = ""
         for page_num in range(min(max_pages, doc.page_count)):
             text += doc[page_num].get_text()
@@ -203,7 +208,7 @@ class DocumentPreview(ServiceBase):
             list[str]: A list of paths to the extracted image files.
         """
         image_paths = []
-        doc = _open_fitz_doc(path)
+        doc = _open_pymupdf_doc(path)
         img_index = 0
         for page_num in range(min(max_pages, doc.page_count)):
             for img_ref in doc[page_num].get_images(full=True):
@@ -281,7 +286,7 @@ class DocumentPreview(ServiceBase):
             return output_path
 
     # MARK: HTML rendering
-    def html_render(self, file_contents: bytes, max_pages: int = 1) -> None | str:
+    def html_render(self, file_contents: bytes, max_pages: int = 1) -> str | None:
         """Render HTML content in a browser and save as PDF.
 
         Args:
@@ -289,7 +294,7 @@ class DocumentPreview(ServiceBase):
             max_pages (int): The maximum number of pages to render.
 
         Returns:
-            None | str: The path to the rendered PDF file, or None if rendering failed.
+            str | None: The path to the rendered PDF file, or None if rendering failed.
         """
         if b"window.location.href = " in file_contents:
             # Document contains code that will cause a redirect, something we likely can't follow
@@ -403,8 +408,7 @@ class DocumentPreview(ServiceBase):
             if request.file_type == "document/office/email":
                 with tempfile.NamedTemporaryFile(suffix=".eml") as tmp:
                     subprocess.run(
-                        ["msgconvert", "-outfile", tmp.name, request.file_path],
-                        capture_output=True,
+                        ["msgconvert", "-outfile", tmp.name, request.file_path], capture_output=True, check=False
                     )
                     tmp.seek(0)
                     file_contents = tmp.read()
@@ -439,8 +443,33 @@ class DocumentPreview(ServiceBase):
             section (ResultSection): The result section to add tags to.
             ocr_content (str): The OCR-extracted text content to scan for IOCs.
         """
-        [section.add_tag("network.email.address", node.value) for node in find_emails(ocr_content.encode())]
-        [section.add_tag("network.static.uri", node.value) for node in find_urls(ocr_content.encode())]
+        # Tag any email addresses found in the OCR content
+        for node in find_emails(ocr_content.encode()):
+            if EMAIL_REGEX.match(node.value.decode()):
+                section.add_tag("network.email.address", node.value)
+
+        # Tag any URLs found in the OCR content
+        for node in find_urls(ocr_content.encode()):
+            # Check if this is a fragment of a pre-existing URL that was broken by a line break
+            fragment_count = ocr_content.count(node.value.decode())
+            existing_count = len(
+                [i for i in section.tags.get("network.static.uri", []) if i.startswith(node.value.decode())]
+            )
+            if fragment_count <= existing_count:
+                # We've seen this fragment enough times already, so we can skip processing it further
+                continue
+
+            if not FULL_URI_REGEX.match(node.value.decode()):
+                if ocr_content[node.end + 1] == b"\n":
+                    # There is a line break in the middle of the URL
+                    next_line_end = ocr_content.find(b"\n", node.end + 1)
+                    # Replace only the first instance of a line break in the joined string
+                    # then check for a full URL match
+                    match = FULL_URI_REGEX.search(ocr_content[node.start : next_line_end].replace(b"\n", b"", 1))
+                    if match:
+                        section.add_tag("network.static.uri", match.group(0))
+            else:
+                section.add_tag("network.static.uri", node.value)
 
     # MARK: QR code scanning
     def scan_for_QR_codes(self, image: Image) -> str:
@@ -456,9 +485,7 @@ class DocumentPreview(ServiceBase):
         with NamedTemporaryFile() as tmp_qr:
             image.save(tmp_qr.name, format="PNG")
             qr_results = subprocess.run(
-                ["zbarimg", "-q", tmp_qr.name],
-                capture_output=True,
-                text=True,
+                ["zbarimg", "-q", tmp_qr.name], capture_output=True, text=True, check=False
             ).stdout.strip()
 
             if qr_results:
@@ -469,9 +496,7 @@ class DocumentPreview(ServiceBase):
                 tmp_qr.seek(0)
                 ImageOps.invert(image.convert("RGB")).save(tmp_qr.name, format="PNG")
                 return subprocess.run(
-                    ["zbarimg", "-q", tmp_qr.name],
-                    capture_output=True,
-                    text=True,
+                    ["zbarimg", "-q", tmp_qr.name], capture_output=True, text=True, check=False
                 ).stdout.strip()
 
     # MARK: Main execution
@@ -543,7 +568,7 @@ class DocumentPreview(ServiceBase):
                 qr_result = self.scan_for_QR_codes(Image.open(BytesIO(_read_file_bytes(fp))))
                 if qr_result:
                     code_type, code_value = qr_result.split(":", 1)
-                    if re.match(FULL_URI, code_value):
+                    if FULL_URI_REGEX.match(code_value):
                         # Tag URI
                         image_section.add_tag("network.static.uri", code_value)
                     else:
@@ -591,18 +616,26 @@ class DocumentPreview(ServiceBase):
                     extracted_text_path = self.extract_pdf_text(pdf_path, max_pages)
 
                     # Check if we can extract any hyperlinked content from the PDF
-                    doc = _open_fitz_doc(pdf_path)
+                    doc = _open_pymupdf_doc(pdf_path)
                     for page in doc:
                         for link in page.get_links():
                             link_uri = link.get("uri", "")
-                            if not link_uri:
+                            if not link_uri or link_uri.startswith("tel:"):
+                                # Skip telephone links as they are not relevant for further processing
                                 continue
-                            if link_uri.startswith("mailto:"):
-                                # Tag email address
-                                image_section.add_tag("network.email.address", link_uri[7:])
-                            else:
-                                # Assume this is a URI
+
+                            # Tag the link URI appropriately
+                            if FULL_URI_REGEX.match(link_uri):
                                 image_section.add_tag("network.static.uri", link_uri)
+
+                            # Check if the link is a mailto link
+                            if link_uri.startswith("mailto:"):
+                                # Parse the mailto link and extract the email address from the path
+                                email_address = urlparse(link_uri).path
+
+                                # Tag email address
+                                if email_address and EMAIL_REGEX.match(email_address):
+                                    image_section.add_tag("network.email.address", email_address)
 
                     if extracted_text_path is not None:
                         with open(extracted_text_path, "r") as fh:
@@ -740,7 +773,7 @@ class DocumentPreview(ServiceBase):
             # Check to see if we're dealing with a suspicious PDF
             if request.file_type == "document/pdf":
                 try:
-                    doc = _open_fitz_doc(request.file_path)
+                    doc = _open_pymupdf_doc(request.file_path)
                     if doc.page_count == 1 and "click" in extracted_text.lower():
                         # Suspected document is part of a phishing campaign
                         ResultTextSection(

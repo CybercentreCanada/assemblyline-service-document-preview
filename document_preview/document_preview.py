@@ -444,14 +444,21 @@ class DocumentPreview(ServiceBase):
             ocr_content (str): The OCR-extracted text content to scan for IOCs.
         """
         # Tag any email addresses found in the OCR content
-        [
-            section.add_tag("network.email.address", node.value)
-            for node in find_emails(ocr_content.encode())
-            if EMAIL_REGEX.match(node.value.decode())
-        ]
+        for node in find_emails(ocr_content.encode()):
+            if EMAIL_REGEX.match(node.value.decode()):
+                section.add_tag("network.email.address", node.value)
 
         # Tag any URLs found in the OCR content
         for node in find_urls(ocr_content.encode()):
+            # Check if this is a fragment of a pre-existing URL that was broken by a line break
+            fragment_count = ocr_content.count(node.value.decode())
+            existing_count = len(
+                [i for i in section.tags.get("network.static.uri", []) if i.startswith(node.value.decode())]
+            )
+            if fragment_count <= existing_count:
+                # We've seen this fragment enough times already, so we can skip processing it further
+                continue
+
             if not FULL_URI_REGEX.match(node.value.decode()):
                 if ocr_content[node.end + 1] == b"\n":
                     # There is a line break in the middle of the URL

@@ -10,24 +10,24 @@
             "img": {
               "description": "Here's the preview for original page 001",
               "name": "page_001_original.png",
-              "sha256": "fc0e6cee69f1d14f1fe6a1ab0abe5ae28b11946db2970699e1d075b1ea18ceb1"
+              "sha256": "e83b7577e748bf9d262f7b3175621be5ad88c35a8f87aad43e375777c9b58f8a"
             },
             "thumb": {
               "description": "Here's the preview for original page 001 (thumbnail)",
               "name": "page_001_original.png.thumb",
-              "sha256": "976505f7c276ffba18af015c456cb3364bf4f9071d46d41e38ea8191196b1592"
+              "sha256": "f4ecdcb88ddb3557d4d8c324935d91c50c53ff68fad9f7f6005b60cee7868b39"
             }
           },
           {
             "img": {
               "description": "Here's the preview for original page 002",
               "name": "page_002_original.png",
-              "sha256": "c5c19a07184fb33dcb2e2740ff9676dbf4ef64906c77ce671c9b0d956fa51579"
+              "sha256": "7e6cc2a009e55dd675e67e616b44f0c2b69a8992c67a493cabbe75301f283d6d"
             },
             "thumb": {
               "description": "Here's the preview for original page 002 (thumbnail)",
               "name": "page_002_original.png.thumb",
-              "sha256": "2bc7a0d5b9ae452c8fa03461b533a1b3cfd2764e230bbf65cd035e0b6dec4823"
+              "sha256": "84e1422a22b5c9d2fecb1d571ae2c3d5ef31f616e7fa3f69265fa62d8623a9b7"
             }
           }
         ],
@@ -61,20 +61,20 @@
     "extracted": [],
     "supplementary": [
       {
-        "name": "page_002_original.png.thumb",
-        "sha256": "2bc7a0d5b9ae452c8fa03461b533a1b3cfd2764e230bbf65cd035e0b6dec4823"
-      },
-      {
-        "name": "page_001_original.png.thumb",
-        "sha256": "976505f7c276ffba18af015c456cb3364bf4f9071d46d41e38ea8191196b1592"
-      },
-      {
         "name": "page_002_original.png",
-        "sha256": "c5c19a07184fb33dcb2e2740ff9676dbf4ef64906c77ce671c9b0d956fa51579"
+        "sha256": "7e6cc2a009e55dd675e67e616b44f0c2b69a8992c67a493cabbe75301f283d6d"
+      },
+      {
+        "name": "page_002_original.png.thumb",
+        "sha256": "84e1422a22b5c9d2fecb1d571ae2c3d5ef31f616e7fa3f69265fa62d8623a9b7"
       },
       {
         "name": "page_001_original.png",
-        "sha256": "fc0e6cee69f1d14f1fe6a1ab0abe5ae28b11946db2970699e1d075b1ea18ceb1"
+        "sha256": "e83b7577e748bf9d262f7b3175621be5ad88c35a8f87aad43e375777c9b58f8a"
+      },
+      {
+        "name": "page_001_original.png.thumb",
+        "sha256": "f4ecdcb88ddb3557d4d8c324935d91c50c53ff68fad9f7f6005b60cee7868b39"
       }
     ]
   },

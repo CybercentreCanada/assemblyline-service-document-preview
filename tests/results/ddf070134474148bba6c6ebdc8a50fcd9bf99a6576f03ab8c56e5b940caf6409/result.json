@@ -10,7 +10,7 @@
             "img": {
               "description": "Here's the preview for original page 001",
               "name": "page_001_original.png",
-              "sha256": "4bebb2dba5e937e61a351bc54bcb86189c01e9891fccf6d7085fa5bc56a10bb7"
+              "sha256": "c6dc23fb6da788fbb3b583e80747ed06ce1a82760f5eb0672915887d243d7929"
             },
             "thumb": {
               "description": "Here's the preview for original page 001 (thumbnail)",
@@ -36,7 +36,7 @@
     "supplementary": [
       {
         "name": "page_001_original.png",
-        "sha256": "4bebb2dba5e937e61a351bc54bcb86189c01e9891fccf6d7085fa5bc56a10bb7"
+        "sha256": "c6dc23fb6da788fbb3b583e80747ed06ce1a82760f5eb0672915887d243d7929"
       },
       {
         "name": "page_001_original.png.thumb",

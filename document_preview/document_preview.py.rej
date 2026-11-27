@@ -1,6 +1,0 @@
-diff a/document_preview/document_preview.py b/document_preview/document_preview.py	(rejected hunks)
-@@ -11,4 +11,3 @@ class DocumentPreview(ServiceBase):
- 
-     def execute(self, request: ServiceRequest):
-         """Run the service."""
--        pass
